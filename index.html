@@ -1,62 +1,24 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIARAP - Sistem Aplikasi Peminjaman Ruang Rapat</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0f7ff',
-              100: '#e0effe',
-              500: '#0284c7',
-              600: '#0369a1',
-              700: '#075985',
-              800: '#0c4a6e',
-              900: '#082f49',
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-
+  
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Phosphor Icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-  <!-- Custom CSS for animations and print view -->
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
   <style>
     body {
       font-family: 'Inter', sans-serif;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
     }
     @media print {
       .no-print {
@@ -70,1812 +32,1335 @@
         color: #000000 !important;
       }
     }
-    .print-only {
-      display: none;
-    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- Toast Notification Container -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Confirmation / Action Modal -->
-  <div id="confirmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 transform transition-all">
-      <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-4" id="confirmModalIcon">
-        <i class="ph ph-warning-circle"></i>
+  <!-- Confirmation Dialog Modal -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100">
+      <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
       </div>
-      <h3 class="text-lg font-bold text-slate-900 mb-2" id="confirmModalTitle">Konfirmasi</h3>
-      <p class="text-sm text-slate-600 mb-6" id="confirmModalMsg">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
-      <div class="flex justify-end gap-3">
-        <button id="cancelModalBtn" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-100 text-sm transition">Batal</button>
-        <button id="okModalBtn" class="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition shadow-sm">Lanjutkan</button>
+      <h3 id="confirm-title" class="text-base font-bold text-slate-900 mb-1">Konfirmasi Tindakan</h3>
+      <p id="confirm-message" class="text-xs text-slate-500 mb-5 leading-relaxed">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+      <div class="flex justify-end gap-2">
+        <button id="btn-confirm-cancel" class="px-3.5 py-2 border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition">Batal</button>
+        <button id="btn-confirm-ok" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition shadow-sm">Lanjutkan</button>
       </div>
     </div>
   </div>
 
-  <!-- VIEW 1: AUTHENTICATION / LOGIN SCREEN -->
-  <div id="authScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 relative overflow-hidden">
-    <!-- Subtle geometric background decoration -->
-    <div class="absolute -top-32 -left-32 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- ================= LAYAR LOGIN OTENTIKASI ================= -->
+  <div id="view-login" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
+    <div class="absolute -top-32 -left-32 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10 relative z-10">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-gradient-to-tr from-brand-700 to-brand-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand-500/30">
-          <i class="ph-bold ph-calendar-blank text-3xl"></i>
+    <div class="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30 relative z-10">
+      
+      <!-- Brand & Title -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 mb-3.5">
+          <i data-lucide="building-2" class="w-8 h-8"></i>
         </div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">SIARAP</h1>
-        <p class="text-xs font-semibold text-brand-600 tracking-wider uppercase mt-0.5">Sistem Aplikasi Peminjaman Ruang Rapat</p>
-        <p class="text-sm text-slate-500 mt-2">Silakan masuk untuk mengakses jadwal dan fasilitas rapat</p>
+        <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">SIARAP</h1>
+        <p class="text-xs font-bold uppercase tracking-wider text-indigo-600 mt-0.5">Sistem Aplikasi Peminjaman Ruang Rapat</p>
+        <p class="text-xs text-slate-500 mt-2">Masukkan username dan password yang telah diberikan oleh Administrator</p>
       </div>
 
-      <!-- Quick Demo Access Pills -->
-      <div class="mb-6 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-        <p class="text-xs font-semibold text-slate-500 mb-2 flex items-center gap-1">
-          <i class="ph-bold ph-lightning text-amber-500"></i> Akun Cepat (Klik untuk isi langsung):
-        </p>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="fillQuickLogin('admin@siarap.go.id', 'admin123')" class="px-2.5 py-1.5 bg-white border border-slate-200 hover:border-brand-500 hover:bg-brand-50 rounded-xl text-left text-xs transition">
-            <span class="font-bold text-slate-800 block">👤 Admin</span>
-            <span class="text-[11px] text-slate-500">admin@siarap.go.id</span>
-          </button>
-          <button type="button" onclick="fillQuickLogin('pegawai@siarap.go.id', 'user123')" class="px-2.5 py-1.5 bg-white border border-slate-200 hover:border-brand-500 hover:bg-brand-50 rounded-xl text-left text-xs transition">
-            <span class="font-bold text-slate-800 block">👥 User Biasa</span>
-            <span class="text-[11px] text-slate-500">pegawai@siarap.go.id</span>
-          </button>
-        </div>
+      <!-- Pesan Peringatan Login Gagal -->
+      <div id="login-error-alert" class="hidden mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
+        <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 flex-shrink-0 text-rose-600"></i>
+        <span id="login-error-msg">Username atau Password salah. Silakan hubungi Administrator.</span>
       </div>
 
-      <!-- Login Form -->
-      <form id="loginForm" class="space-y-4">
+      <!-- Form Login Wajib Username & Password -->
+      <form id="form-login" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Alamat Email</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Username / ID Pengguna *</label>
           <div class="relative">
-            <i class="ph ph-envelope-simple absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-            <input type="email" id="loginEmail" required placeholder="nama@instansi.go.id" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm outline-none transition">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="text" 
+              id="login-username" 
+              required
+              autocomplete="username"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 focus:bg-white transition" 
+              placeholder="Masukkan username Anda" 
+            />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Kata Sandi</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Kata Sandi (Password) *</label>
           <div class="relative">
-            <i class="ph ph-lock-key absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm outline-none transition">
-            <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              <i class="ph ph-eye"></i>
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="password" 
+              id="login-password" 
+              required
+              autocomplete="current-password"
+              class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-slate-50 focus:bg-white transition" 
+              placeholder="••••••••" 
+            />
+            <button 
+              type="button" 
+              id="btn-toggle-login-pass" 
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+            >
+              <i data-lucide="eye" class="w-4 h-4" id="icon-toggle-login"></i>
             </button>
           </div>
         </div>
 
-        <button type="submit" id="btnLoginSubmit" class="w-full mt-2 py-3 px-4 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-semibold rounded-xl text-sm shadow-md shadow-brand-600/25 transition flex items-center justify-center gap-2">
-          <span>Masuk ke Sistem</span>
-          <i class="ph-bold ph-arrow-right"></i>
+        <button 
+          type="submit" 
+          id="btn-submit-login" 
+          class="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transition duration-150 flex items-center justify-center gap-2"
+        >
+          <span>Masuk ke SIARAP</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </form>
 
-      <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-100 pt-4">
-        &copy; 2026 SIARAP &bull; Terhubung Cloud Real-Time
+      <!-- Petunjuk Akses Bawaan Pertama Kali Sistem -->
+      <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Belum memiliki akun? Hubungi <strong>Administrator</strong> untuk mendapatkan akses.<br/>
+          <span class="text-[10px] text-slate-500 mt-1 inline-block bg-slate-100 px-2 py-0.5 rounded">Akses Awal Admin: <strong>admin</strong> / <strong>admin123</strong></span>
+        </p>
       </div>
+
     </div>
   </div>
 
-  <!-- VIEW 2: MAIN DASHBOARD & APPLICATION INTERFACE -->
-  <div id="mainApp" class="hidden flex-1 flex flex-col">
+  <!-- ================= APLIKASI UTAMA (SETELAH LOGIN) ================= -->
+  <div id="view-app" class="hidden min-h-screen flex flex-col">
+    
     <!-- Navbar Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <!-- Logo Brand -->
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-brand-600/20">
-            <i class="ph-bold ph-buildings text-xl"></i>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-lg tracking-tight text-slate-900">SIARAP</span>
-              <span id="roleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-100 text-brand-700">Admin</span>
-            </div>
-            <p class="text-[11px] text-slate-500 hidden sm:block">Sistem Peminjaman Ruang Rapat</p>
-          </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <nav class="hidden md:flex items-center space-x-1">
-          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active-nav px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
-            <i class="ph-bold ph-squares-four text-base"></i> Ringkasan
-          </button>
-          <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
-            <i class="ph-bold ph-calendar text-base"></i> Jadwal Ruangan
-          </button>
-          <button onclick="switchTab('display')" id="nav-display" class="nav-btn px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
-            <i class="ph-bold ph-presentation text-base"></i> Display Ruangan
-          </button>
-          <button onclick="switchTab('users')" id="nav-users" class="nav-btn admin-only px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
-            <i class="ph-bold ph-users-three text-base"></i> Kelola User
-          </button>
-        </nav>
-
-        <!-- User Profile & Action Controls -->
-        <div class="flex items-center gap-3">
-          <button onclick="window.print()" title="Cetak Laporan Rapat" class="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-xl text-lg transition">
-            <i class="ph ph-printer"></i>
-          </button>
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
           
-          <div class="h-6 w-px bg-slate-200"></div>
-
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs" id="userAvatar">
-              AD
+          <!-- Logo Brand -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-500/20">
+              <i data-lucide="building-2" class="w-5 h-5"></i>
             </div>
-            <div class="hidden lg:block text-left">
-              <div class="text-xs font-bold text-slate-800" id="currentUserName">Administrator</div>
-              <div class="text-[11px] text-slate-400" id="currentUserEmail">admin@siarap.go.id</div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-lg text-slate-900 tracking-tight">SIARAP</span>
+                <span id="badge-cloud-status" class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Cloud Aktif
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 hidden sm:block">Sistem Aplikasi Peminjaman Ruang Rapat</p>
             </div>
           </div>
 
-          <button onclick="handleLogout()" class="p-2 text-rose-500 hover:bg-rose-50 rounded-xl text-lg transition" title="Keluar">
-            <i class="ph-bold ph-sign-out"></i>
-          </button>
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center space-x-1">
+            <button onclick="switchTab('jadwal')" id="nav-jadwal" class="nav-btn px-3 py-2 rounded-xl text-xs font-semibold text-indigo-600 bg-indigo-50 flex items-center gap-1.5 transition">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              Jadwal Rapat
+            </button>
+            <button onclick="switchTab('ruangan')" id="nav-ruangan" class="nav-btn px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
+              <i data-lucide="door-open" class="w-4 h-4"></i>
+              Fasilitas Ruang
+            </button>
+            <button onclick="switchTab('signage')" id="nav-signage" class="nav-btn px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-1.5 transition">
+              <i data-lucide="monitor" class="w-4 h-4"></i>
+              Display Ruangan
+            </button>
+            <!-- Khusus Admin: Kelola User -->
+            <button onclick="switchTab('users')" id="nav-users" class="nav-btn hidden px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 items-center gap-1.5 transition">
+              <i data-lucide="users" class="w-4 h-4"></i>
+              Kelola User (Admin)
+            </button>
+          </nav>
+
+          <!-- Profil Sesi & Tombol Keluar -->
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <div class="text-xs font-bold text-slate-800" id="current-user-name">Pengguna</div>
+              <div class="text-[11px] font-medium text-slate-500 flex items-center justify-end gap-1 mt-0.5">
+                <span id="current-user-role-badge" class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] uppercase font-bold">Admin</span>
+              </div>
+            </div>
+            <button 
+              id="btn-logout" 
+              title="Keluar dari Akun" 
+              class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+            >
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+          </div>
+
         </div>
       </div>
 
-      <!-- Mobile Tab Bar (Horizontal Scroll) -->
-      <div class="flex md:hidden px-3 py-2 border-t border-slate-100 overflow-x-auto gap-1 no-print">
-        <button onclick="switchTab('dashboard')" id="m-nav-dashboard" class="mobile-nav-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white flex items-center gap-1">
-          <i class="ph-bold ph-squares-four"></i> Ringkasan
+      <!-- Mobile Navigation Bar -->
+      <div class="md:hidden flex border-t border-slate-200 px-2 py-1.5 justify-around bg-slate-50 text-[11px]">
+        <button onclick="switchTab('jadwal')" id="m-nav-jadwal" class="p-2 flex flex-col items-center text-indigo-600 font-semibold">
+          <i data-lucide="calendar" class="w-4 h-4 mb-0.5"></i> Jadwal
         </button>
-        <button onclick="switchTab('schedule')" id="m-nav-schedule" class="mobile-nav-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1">
-          <i class="ph-bold ph-calendar"></i> Jadwal
+        <button onclick="switchTab('ruangan')" id="m-nav-ruangan" class="p-2 flex flex-col items-center text-slate-600">
+          <i data-lucide="door-open" class="w-4 h-4 mb-0.5"></i> Ruang
         </button>
-        <button onclick="switchTab('display')" id="m-nav-display" class="mobile-nav-btn whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1">
-          <i class="ph-bold ph-presentation"></i> Display
+        <button onclick="switchTab('signage')" id="m-nav-signage" class="p-2 flex flex-col items-center text-slate-600">
+          <i data-lucide="monitor" class="w-4 h-4 mb-0.5"></i> Display
         </button>
-        <button onclick="switchTab('users')" id="m-nav-users" class="mobile-nav-btn admin-only whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-1">
-          <i class="ph-bold ph-users-three"></i> User
+        <button onclick="switchTab('users')" id="m-nav-users" class="hidden p-2 flex flex-col items-center text-slate-600">
+          <i data-lucide="users" class="w-4 h-4 mb-0.5"></i> User
         </button>
       </div>
     </header>
 
-    <!-- MAIN CONTENT BODY -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-
-      <!-- TAB 1: DASHBOARD VIEW -->
-      <div id="tab-dashboard" class="tab-pane space-y-6">
-        <!-- Welcome Hero & Quick Action -->
-        <div class="bg-gradient-to-r from-slate-900 via-brand-900 to-slate-900 rounded-3xl p-6 md:p-8 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-          <div class="relative z-10 max-w-2xl">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-3">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sinkronisasi Cloud Aktif
-            </span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Selamat Datang di Portal SIARAP</h2>
-            <p class="text-slate-300 text-sm mt-1.5 leading-relaxed">
-              Pantau ketersediaan 6 ruang rapat utama secara langsung. Pastikan kegiatan rapat kedinasan berjalan terorganisir tanpa bentrok jadwal.
+    <!-- Konten Utama Halaman -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      
+      <!-- ================= TAB 1: JADWAL RAPAT ================= -->
+      <section id="tab-jadwal" class="space-y-6">
+        <!-- Judul & Aksi Atas -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Jadwal Penggunaan Ruang Rapat</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              <span id="user-view-info">Hanya Administrator yang memiliki akses untuk menginput jadwal. Pegawai dapat melihat agenda.</span>
             </p>
           </div>
-          <div class="relative z-10 flex flex-wrap gap-3">
-            <button onclick="openBookingModal()" class="admin-only px-5 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-brand-500/30 transition">
-              <i class="ph-bold ph-plus-circle text-base"></i> Input Jadwal Rapat
+          
+          <div class="flex items-center gap-2 no-print">
+            <button onclick="window.print()" class="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl shadow-sm flex items-center gap-1.5 transition">
+              <i data-lucide="printer" class="w-4 h-4"></i> Cetak Jadwal
             </button>
-            <button onclick="switchTab('display')" class="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs flex items-center gap-2 backdrop-blur-sm transition border border-white/10">
-              <i class="ph-bold ph-device-tablet-speaker text-base"></i> Mode Signage
+            <button id="btn-tambah-jadwal" class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-600/30 items-center gap-1.5 transition">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Input Jadwal Rapat
             </button>
           </div>
         </div>
 
-        <!-- Metrics Overview Grid -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center text-2xl flex-shrink-0">
-              <i class="ph-duotone ph-door"></i>
-            </div>
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Ruang</div>
-              <div class="text-2xl font-extrabold text-slate-800">6 <span class="text-xs font-normal text-slate-500">Ruangan</span></div>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl flex-shrink-0">
-              <i class="ph-duotone ph-calendar-check"></i>
-            </div>
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Rapat Hari Ini</div>
-              <div class="text-2xl font-extrabold text-slate-800" id="statTodayMeetings">0</div>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl flex-shrink-0">
-              <i class="ph-duotone ph-broadcast"></i>
-            </div>
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Sedang Berlangsung</div>
-              <div class="text-2xl font-extrabold text-slate-800" id="statActiveMeetings">0</div>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl flex-shrink-0">
-              <i class="ph-duotone ph-users"></i>
-            </div>
-            <div>
-              <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Pengguna</div>
-              <div class="text-2xl font-extrabold text-slate-800" id="statTotalUsers">0</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Real-Time Room Status Cards -->
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-slate-900">Status 6 Ruang Rapat Hari Ini</h3>
-              <p class="text-xs text-slate-500">Kondisi real-time dan agenda penggunaan terkini</p>
-            </div>
-            <span class="text-xs font-medium text-slate-500 flex items-center gap-1.5">
-              <i class="ph ph-clock"></i> <span id="liveClock">00:00:00 WIB</span>
+        <!-- Filter & Bar Pencarian -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between no-print">
+          <div class="w-full md:w-72 relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
             </span>
+            <input 
+              type="text" 
+              id="filter-search" 
+              placeholder="Cari agenda, unit, atau PIC..." 
+              class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="roomStatusGrid">
-            <!-- Dynamically populated room cards -->
-          </div>
-        </div>
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <!-- Filter Ruangan -->
+            <select id="filter-room" class="py-2 px-3 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option value="ALL">Semua 6 Ruang Rapat</option>
+              <option value="Ruang Rapat Rinjani">Ruang Rapat Rinjani</option>
+              <option value="Ruang Rapat Kerinci">Ruang Rapat Kerinci</option>
+              <option value="Ruang Rapat Semeru">Ruang Rapat Semeru</option>
+              <option value="Ruang Rapat Bromo">Ruang Rapat Bromo</option>
+              <option value="Ruang Rapat Jaya Wijaya">Ruang Rapat Jaya Wijaya</option>
+              <option value="Ruang Rapat Gede">Ruang Rapat Gede</option>
+            </select>
 
-        <!-- Today's Schedule Timeline -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-            <div>
-              <h4 class="font-bold text-slate-900">Agenda Rapat Hari Ini (<span id="currentDateLabel"></span>)</h4>
-              <p class="text-xs text-slate-500">Seluruh jadwal yang dijadwalkan berlangsung hari ini</p>
-            </div>
-            <button onclick="switchTab('schedule')" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1">
-              Lihat Kalender Lengkap <i class="ph ph-arrow-right"></i>
-            </button>
-          </div>
+            <!-- Filter Tanggal -->
+            <input 
+              type="date" 
+              id="filter-date" 
+              class="py-2 px-3 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            />
 
-          <div id="todayMeetingsList" class="space-y-3">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: SCHEDULE & CALENDAR VIEW -->
-      <div id="tab-schedule" class="tab-pane hidden space-y-6">
-        <!-- Control Header & Filters -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex flex-wrap items-center gap-3">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Filter Tanggal</label>
-              <input type="date" id="filterDate" onchange="renderScheduleView()" class="px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Filter Ruang</label>
-              <select id="filterRoom" onchange="renderScheduleView()" class="px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none bg-white">
-                <option value="ALL">Semua Ruang Rapat</option>
-                <option value="Ruang Rapat Rinjani">Ruang Rapat Rinjani</option>
-                <option value="Ruang Rapat Kerinci">Ruang Rapat Kerinci</option>
-                <option value="Ruang Rapat Semeru">Ruang Rapat Semeru</option>
-                <option value="Ruang Rapat Bromo">Ruang Rapat Bromo</option>
-                <option value="Ruang Rapat Jaya Wijaya">Ruang Rapat Jaya Wijaya</option>
-                <option value="Ruang Rapat Gede">Ruang Rapat Gede</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Cari Kata Kunci</label>
-              <div class="relative">
-                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="filterKeyword" oninput="renderScheduleView()" placeholder="Cari topik atau unit..." class="pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none w-48 sm:w-60">
-              </div>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 self-end md:self-auto">
-            <button onclick="resetScheduleFilters()" class="px-3 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
-              <i class="ph ph-arrow-counter-clockwise"></i> Reset
-            </button>
-            <button onclick="openBookingModal()" class="admin-only px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-              <i class="ph-bold ph-plus"></i> Tambah Jadwal
+            <button id="btn-reset-filter" class="p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100" title="Reset Filter">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <!-- Schedule Table -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <i class="ph-duotone ph-list-bullets text-brand-600 text-lg"></i>
-              Daftar Agenda Rapat Terdaftar
-            </h3>
-            <span class="text-xs text-slate-500" id="scheduleCountBadge">Memuat data...</span>
-          </div>
-
+        <!-- Tabel Jadwal Rapat -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-600">
-              <thead class="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3">Tanggal & Waktu</th>
-                  <th class="px-4 py-3">Ruang Rapat</th>
-                  <th class="px-4 py-3">Topik / Agenda Rapat</th>
-                  <th class="px-4 py-3">Penyelenggara / Unit</th>
-                  <th class="px-4 py-3">Peserta & Fasilitas</th>
-                  <th class="px-4 py-3 text-center admin-only">Aksi (Admin)</th>
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <th class="py-3 px-4">Ruang Rapat</th>
+                  <th class="py-3 px-4">Tanggal & Jam</th>
+                  <th class="py-3 px-4">Agenda Rapat</th>
+                  <th class="py-3 px-4">Unit / Penanggung Jawab</th>
+                  <th class="py-3 px-4 text-center">Peserta</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-right no-print col-aksi hidden">Aksi (Admin)</th>
                 </tr>
               </thead>
-              <tbody id="scheduleTableBody" class="divide-y divide-slate-100">
-                <!-- Dynamically filled -->
+              <tbody id="table-jadwal-body" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Baris tabel dirender otomatis -->
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
 
-      <!-- TAB 3: MEETING ROOM DIGITAL SIGNAGE / DISPLAY BOARD -->
-      <div id="tab-display" class="tab-pane hidden space-y-6">
-        <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-slate-800">
-          <!-- Digital Board Top Header -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+          <!-- Empty State -->
+          <div id="jadwal-empty-state" class="hidden p-10 text-center">
+            <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2.5">
+              <i data-lucide="calendar-x" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-700">Tidak Ada Jadwal Rapat</h4>
+            <p class="text-xs text-slate-400 mt-0.5">Belum ada agenda rapat yang cocok dengan filter tanggal atau ruangan ini.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: FASILITAS RUANG RAPAT ================= -->
+      <section id="tab-ruangan" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Daftar 6 Ruang Rapat</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Spesifikasi, kapasitas, dan fasilitas bawaan yang tersedia di setiap ruangan.</p>
+        </div>
+
+        <div id="grid-ruangan" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Kartu 6 Ruangan diisi otomatis via script -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: DISPLAY SIGNAGE ================= -->
+      <section id="tab-signage" class="hidden space-y-6">
+        <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-6 mb-6">
             <div>
-              <div class="flex items-center gap-2 text-brand-400 text-xs font-bold uppercase tracking-widest mb-1">
-                <i class="ph-bold ph-broadcast text-rose-500 animate-pulse"></i> LIVE MEETING ROOM BOARD
-              </div>
-              <h2 class="text-2xl font-black tracking-tight text-white">SIARAP DISPLAY SIGNAGE</h2>
-              <p class="text-xs text-slate-400">Monitoring real-time status ruang rapat gedung kantor</p>
+              <span class="text-xs font-bold uppercase tracking-widest text-indigo-400">Live Meeting Signage Board</span>
+              <h2 class="text-2xl sm:text-3xl font-black mt-1">SIARAP MONITORING BOARD</h2>
+              <p class="text-xs text-slate-400">Status ketersediaan ruang rapat real-time untuk layar display gedung</p>
             </div>
-            <div class="text-left sm:text-right bg-slate-800/80 px-4 py-2.5 rounded-2xl border border-slate-700">
-              <div class="text-xl font-extrabold tracking-wider text-emerald-400" id="displayClock">00:00:00 WIB</div>
-              <div class="text-xs text-slate-400" id="displayDate">Senin, 21 September 2026</div>
+            <div class="text-left sm:text-right bg-slate-800/80 p-3 rounded-2xl border border-slate-700">
+              <div id="signage-clock" class="text-2xl sm:text-3xl font-mono font-bold text-indigo-400">00:00:00</div>
+              <div id="signage-date" class="text-xs text-slate-400 mt-0.5 font-medium">Senin, 21 September 2026</div>
             </div>
           </div>
 
-          <!-- Room Display Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6" id="displayRoomsContainer">
-            <!-- Dynamically populated for display signage -->
+          <div id="signage-rooms-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Signage rooms -->
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- TAB 4: USER MANAGEMENT VIEW (ADMIN ONLY) -->
-      <div id="tab-users" class="tab-pane hidden space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+      <!-- ================= TAB 4: KELOLA USER (ADMIN ONLY) ================= -->
+      <section id="tab-users" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 class="text-base font-bold text-slate-900">Manajemen Pengguna SIARAP</h3>
-            <p class="text-xs text-slate-500">Kelola akun administrator dan pengguna instansi</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Manajemen Pengguna</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Admin dapat menambah akun user baru, mengubah password, dan menghapus akses pengguna.</p>
           </div>
-          <button onclick="openUserModal()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition">
-            <i class="ph-bold ph-user-plus text-base"></i> Tambah User Baru
+          <button id="btn-tambah-user" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah User Baru
           </button>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs text-slate-600">
-              <thead class="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-3.5">Pengguna</th>
-                  <th class="px-4 py-3.5">Email</th>
-                  <th class="px-4 py-3.5">Hak Akses (Role)</th>
-                  <th class="px-4 py-3.5">Kata Sandi</th>
-                  <th class="px-4 py-3.5 text-center">Tindakan</th>
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                  <th class="py-3 px-4">Nama Lengkap</th>
+                  <th class="py-3 px-4">Username Akun</th>
+                  <th class="py-3 px-4">Peran (Hak Akses)</th>
+                  <th class="py-3 px-4">Unit / Bagian</th>
+                  <th class="py-3 px-4">Password</th>
+                  <th class="py-3 px-4 text-right">Tindakan</th>
                 </tr>
               </thead>
-              <tbody id="usersTableBody" class="divide-y divide-slate-100">
-                <!-- User rows will be loaded here -->
+              <tbody id="table-users-body" class="divide-y divide-slate-100 text-slate-700">
+                <!-- User rows -->
               </tbody>
             </table>
           </div>
         </div>
-      </div>
+      </section>
 
     </main>
 
-    <!-- App Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-400 no-print mt-auto">
-      SIARAP - Sistem Aplikasi Peminjaman Ruang Rapat &copy; 2026. Sinkronisasi Data Cloud Otomatis.
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3.5 px-6 text-center text-xs text-slate-400 no-print mt-auto">
+      SIARAP - Sistem Aplikasi Peminjaman Ruang Rapat &bull; Penyimpanan Data Cloud & Local Terenkripsi
     </footer>
   </div>
 
-  <!-- MODAL: BOOKING / JADWAL RAPAT (ADMIN ONLY) -->
-  <div id="bookingModal" class="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-xl w-full shadow-2xl p-6 sm:p-8 my-8 relative">
-      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+  <!-- ================= MODAL: FORM INPUT JADWAL (ADMIN ONLY) ================= -->
+  <div id="modal-jadwal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl overflow-y-auto max-h-[92vh]">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-100">
         <div>
-          <h3 class="text-lg font-bold text-slate-900" id="bookingModalTitle">Input Jadwal Rapat Baru</h3>
-          <p class="text-xs text-slate-500">Lengkapi formulir peminjaman ruang rapat di bawah ini</p>
+          <h3 id="modal-jadwal-title" class="text-base font-bold text-slate-900">Input Jadwal Rapat Baru</h3>
+          <p class="text-xs text-slate-400">Peminjaman hanya dapat dilakukan oleh Administrator</p>
         </div>
-        <button onclick="closeBookingModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
-          <i class="ph ph-x font-bold"></i>
+        <button onclick="closeModal('modal-jadwal')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="bookingForm" class="mt-5 space-y-4">
-        <input type="hidden" id="bookingDocId" value="">
-
+      <form id="form-jadwal" class="mt-4 space-y-3.5">
+        <input type="hidden" id="jadwal-id" />
+        
         <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Topik / Agenda Rapat *</label>
-          <input type="text" id="mTopik" required placeholder="Contoh: Rapat Koordinasi Anggaran Triwulan IV" class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Pilih Ruang Rapat *</label>
-            <select id="mRuang" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition bg-white">
-              <option value="">-- Pilih Ruangan --</option>
-              <option value="Ruang Rapat Rinjani">Ruang Rapat Rinjani (Lantai 2 - Kapasitas 40 Orang)</option>
-              <option value="Ruang Rapat Kerinci">Ruang Rapat Kerinci (Lantai 2 - Kapasitas 25 Orang)</option>
-              <option value="Ruang Rapat Semeru">Ruang Rapat Semeru (Lantai 3 - Kapasitas 30 Orang)</option>
-              <option value="Ruang Rapat Bromo">Ruang Rapat Bromo (Lantai 3 - Kapasitas 15 Orang)</option>
-              <option value="Ruang Rapat Jaya Wijaya">Ruang Rapat Jaya Wijaya (Lantai 4 - VIP 50 Orang)</option>
-              <option value="Ruang Rapat Gede">Ruang Rapat Gede (Lantai 1 - Kapasitas 20 Orang)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Tanggal Rapat *</label>
-            <input type="date" id="mTanggal" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Jam Mulai *</label>
-            <input type="time" id="mJamMulai" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Jam Selesai *</label>
-            <input type="time" id="mJamSelesai" required class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Unit Kerja / Penyelenggara *</label>
-            <input type="text" id="mPenyelenggara" required placeholder="Contoh: Bagian Keuangan & Perencanaan" class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Estimasi Jumlah Peserta</label>
-            <input type="number" id="mPeserta" min="1" max="100" placeholder="Contoh: 20" class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Fasilitas Tambahan / Kebutuhan</label>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-700">
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Proyektor / LCD" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Proyektor / LCD</span>
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Zoom / Hybrid System" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Zoom / Hybrid</span>
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Sound & Mic Wireless" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Mic Wireless</span>
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Snack & Coffee Break" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Snack / Kopi</span>
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Whiteboard / Flipchart" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Whiteboard</span>
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <input type="checkbox" name="fasilitas" value="Pencatatan Notulensi" class="rounded text-brand-600 focus:ring-brand-500">
-              <span>Notulis</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
-          <button type="button" onclick="closeBookingModal()" class="px-4 py-2.5 border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition">Batal</button>
-          <button type="submit" id="btnSaveBooking" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-md shadow-brand-600/20 transition">
-            <i class="ph-bold ph-check"></i> Simpan Jadwal
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: MANAJEMEN USER (ADMIN ONLY) -->
-  <div id="userModal" class="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 sm:p-7 relative">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div>
-          <h3 class="text-base font-bold text-slate-900" id="userModalTitle">Tambah Akun Pengguna Baru</h3>
-          <p class="text-xs text-slate-500">Kelola kredensial akses sistem SIARAP</p>
-        </div>
-        <button onclick="closeUserModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
-          <i class="ph ph-x font-bold text-sm"></i>
-        </button>
-      </div>
-
-      <form id="userForm" class="mt-4 space-y-3.5">
-        <input type="hidden" id="userDocId" value="">
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap *</label>
-          <input type="text" id="uNama" required placeholder="Contoh: Rahmat Hidayat, S.Kom" class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">Alamat Email *</label>
-          <input type="email" id="uEmail" required placeholder="rahmat@instansi.go.id" class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition">
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">Kata Sandi / Password *</label>
-          <input type="text" id="uPassword" required placeholder="Minimal 6 karakter" class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition font-mono">
-          <p class="text-[10px] text-slate-400 mt-1">Admin dapat mengatur ulang password pengguna secara langsung di sini.</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">Peran (Hak Akses) *</label>
-          <select id="uRole" required class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition bg-white">
-            <option value="user">User Biasa (Hanya Melihat Jadwal / View Only)</option>
-            <option value="admin">Administrator (Input Jadwal & Kelola Pengguna)</option>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Pilih Ruang Rapat *</label>
+          <select id="jadwal-room" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 bg-white">
+            <option value="Ruang Rapat Rinjani">Ruang Rapat Rinjani (Lantai 2 - Kapasitas 25 orang)</option>
+            <option value="Ruang Rapat Kerinci">Ruang Rapat Kerinci (Lantai 2 - Kapasitas 20 orang)</option>
+            <option value="Ruang Rapat Semeru">Ruang Rapat Semeru (Lantai 3 - Kapasitas 40 orang)</option>
+            <option value="Ruang Rapat Bromo">Ruang Rapat Bromo (Lantai 3 - Kapasitas 15 orang)</option>
+            <option value="Ruang Rapat Jaya Wijaya">Ruang Rapat Jaya Wijaya (Lantai 4 - Kapasitas 60 orang VIP)</option>
+            <option value="Ruang Rapat Gede">Ruang Rapat Gede (Lantai 1 - Kapasitas 12 orang)</option>
           </select>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-          <button type="button" onclick="closeUserModal()" class="px-3.5 py-2 border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition">Batal</button>
-          <button type="submit" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
-            <i class="ph-bold ph-check"></i> Simpan User
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Topik / Agenda Rapat *</label>
+          <input type="text" id="jadwal-agenda" required placeholder="Contoh: Rapat Koordinasi Anggaran" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Tanggal *</label>
+            <input type="date" id="jadwal-date" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Jam Mulai *</label>
+            <input type="time" id="jadwal-start-time" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Jam Selesai *</label>
+            <input type="time" id="jadwal-end-time" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Penanggung Jawab (PIC) *</label>
+            <input type="text" id="jadwal-pic" required placeholder="Nama Pejabat / Pegawai" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Unit Kerja / Divisi *</label>
+            <input type="text" id="jadwal-unit" required placeholder="Contoh: Bagian Keuangan" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Jumlah Peserta</label>
+            <input type="number" id="jadwal-peserta" min="1" placeholder="Contoh: 20" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Fasilitas Tambahan</label>
+            <input type="text" id="jadwal-notes" placeholder="Contoh: Mic wireless, Zoom hybrid" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <!-- Warning Bentrok Otomatis -->
+        <div id="conflict-warning" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-start gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+          <span id="conflict-message">Terdeteksi bentrok dengan jadwal yang sudah ada!</span>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-jadwal')" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 transition">
+            Batal
+          </button>
+          <button type="submit" id="btn-submit-jadwal" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+            Simpan Jadwal
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- PRINT ONLY SECTION -->
-  <div class="print-only p-8 text-black">
-    <div class="text-center border-b-2 border-black pb-4 mb-6">
-      <h1 class="text-2xl font-black">SIARAP - SISTEM APLIKASI PEMINJAMAN RUANG RAPAT</h1>
-      <p class="text-sm font-semibold">REKAPITULASI JADWAL PEMINJAMAN RUANG RAPAT</p>
-      <p class="text-xs text-gray-600 mt-1" id="printDateGenerated">Dicetak pada: -</p>
+  <!-- ================= MODAL: KELOLA USER (ADMIN ONLY) ================= -->
+  <div id="modal-user" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+        <div>
+          <h3 id="modal-user-title" class="text-base font-bold text-slate-900">Tambah Akun Pengguna</h3>
+          <p class="text-xs text-slate-400">Atur username dan password akun untuk diberikan ke user</p>
+        </div>
+        <button onclick="closeModal('modal-user')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-user" class="mt-4 space-y-3">
+        <input type="hidden" id="user-id" />
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nama Lengkap Pegawai *</label>
+          <input type="text" id="user-nama" required placeholder="Contoh: Rahmat Hidayat, S.E." class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Username Login *</label>
+          <input type="text" id="user-username" required placeholder="Contoh: rahmadhidayat" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 font-mono" />
+          <p class="text-[10px] text-slate-400 mt-1">Username ini digunakan oleh user saat masuk ke sistem.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Password Login *</label>
+          <div class="relative">
+            <input type="text" id="user-password" required placeholder="Minimal 4 karakter" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 font-mono" />
+          </div>
+          <p class="text-[10px] text-slate-400 mt-1">Admin dapat memberikan atau mereset password user di sini.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Peran (Hak Akses) *</label>
+            <select id="user-role" required class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option value="user">User (Hanya Lihat)</option>
+              <option value="admin">Administrator (Akses Penuh)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Unit Kerja / Bagian</label>
+            <input type="text" id="user-unit" placeholder="Contoh: Tata Usaha" class="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 transition">
+            Batal
+          </button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm transition">
+            Simpan Pengguna
+          </button>
+        </div>
+      </form>
     </div>
-    <table class="w-full border-collapse border border-black text-xs">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border border-black p-2 text-left">No</th>
-          <th class="border border-black p-2 text-left">Tanggal & Waktu</th>
-          <th class="border border-black p-2 text-left">Ruang Rapat</th>
-          <th class="border border-black p-2 text-left">Agenda Rapat</th>
-          <th class="border border-black p-2 text-left">Unit / Penyelenggara</th>
-          <th class="border border-black p-2 text-left">Peserta</th>
-        </tr>
-      </thead>
-      <tbody id="printTableBody">
-        <!-- populated dynamically -->
-      </tbody>
-    </table>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { 
-      getAuth, 
-      signInAnonymously, 
-      signInWithCustomToken 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      setDoc, 
-      addDoc, 
-      updateDoc, 
-      deleteDoc, 
-      onSnapshot, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  <script>
+    // 6 Ruangan Resmi SIARAP
+    const RUANGAN_DATA = [
+      {
+        nama: "Ruang Rapat Rinjani",
+        kapasitas: "25 Orang",
+        lantai: "Lantai 2",
+        fasilitas: ["Smart TV 65\"", "Video Conference Polycom", "Sound System", "Whiteboard", "Full AC"]
+      },
+      {
+        nama: "Ruang Rapat Kerinci",
+        kapasitas: "20 Orang",
+        lantai: "Lantai 2",
+        fasilitas: ["Proyektor Laser", "Sound System", "Koneksi HDMI/Wireless", "AC"]
+      },
+      {
+        nama: "Ruang Rapat Semeru",
+        kapasitas: "40 Orang",
+        lantai: "Lantai 3",
+        fasilitas: ["Dual Screen Projector", "Mic Wireless (4 unit)", "Podium", "Live Streaming Kit", "Full AC"]
+      },
+      {
+        nama: "Ruang Rapat Bromo",
+        kapasitas: "15 Orang",
+        lantai: "Lantai 3",
+        fasilitas: ["TV Monitor 55\"", "Meja Bundar Diskusi", "Glass Board", "Full AC"]
+      },
+      {
+        nama: "Ruang Rapat Jaya Wijaya",
+        kapasitas: "60 Orang (VIP)",
+        lantai: "Lantai 4",
+        fasilitas: ["Videowall P2.5", "Sistem Konferensi Bosch", "Ruang Transit VIP", "Smart Lighting", "Full AC"]
+      },
+      {
+        nama: "Ruang Rapat Gede",
+        kapasitas: "12 Orang",
+        lantai: "Lantai 1",
+        fasilitas: ["TV LED 50\"", "Meja Rapat Oval", "High-speed Wi-Fi", "Full AC"]
+      }
+    ];
 
-    // Application Master State
-    window.AppState = {
-      currentUser: null, // { id, name, email, role }
-      meetings: [],
-      users: [],
-      roomsMeta: [
-        {
-          name: "Ruang Rapat Rinjani",
-          floor: "Lantai 2",
-          capacity: "40 Orang",
-          desc: "Cocok untuk rapat koordinasi lintas divisi dan sosialisasi.",
-          badgeColor: "from-sky-500 to-blue-600",
-          facilities: ["Smart TV", "Proyektor", "Sound System", "AC Sentral"]
-        },
-        {
-          name: "Ruang Rapat Kerinci",
-          floor: "Lantai 2",
-          capacity: "25 Orang",
-          desc: "Ruang pertemuan sedang dengan tata meja bundar interaktif.",
-          badgeColor: "from-emerald-500 to-teal-600",
-          facilities: ["Sound System", "Mic Wireless", "Whiteboard", "AC"]
-        },
-        {
-          name: "Ruang Rapat Semeru",
-          floor: "Lantai 3",
-          capacity: "30 Orang",
-          desc: "Dilengkapi fasilitas hybrid camera & mikrofon 360 derajat.",
-          badgeColor: "from-indigo-500 to-purple-600",
-          facilities: ["Hybrid Zoom Cam", "Proyektor", "Mic Array", "Podium"]
-        },
-        {
-          name: "Ruang Rapat Bromo",
-          floor: "Lantai 3",
-          capacity: "15 Orang",
-          desc: "Ideal untuk rapat teknis skala kecil, FGD, atau wawancara.",
-          badgeColor: "from-amber-500 to-orange-600",
-          facilities: ["Smart Board", "TV 65 Inch", "Coffee Corner", "AC"]
-        },
-        {
-          name: "Ruang Rapat Jaya Wijaya",
-          floor: "Lantai 4",
-          capacity: "50 Orang",
-          desc: "Ruang rapat VIP / Pleno Eksekutif pimpinan tertinggi.",
-          badgeColor: "from-rose-500 to-red-600",
-          facilities: ["VIP Lounge", "Dual Projector", "Teleconference", "Sound Pro"]
-        },
-        {
-          name: "Ruang Rapat Gede",
-          floor: "Lantai 1",
-          capacity: "20 Orang",
-          desc: "Akses mudah dekat lobi utama untuk rapat dengan tamu eksternal.",
-          badgeColor: "from-teal-500 to-cyan-600",
-          facilities: ["Proyektor", "Whiteboard", "Dispenser", "AC"]
-        }
-      ]
+    // Akun Default Awal untuk Login Pertama Kali
+    const SEED_USERS = [
+      {
+        id: "usr_admin",
+        nama: "Administrator Utama",
+        username: "admin",
+        password: "admin123",
+        role: "admin",
+        unit: "Pusat Data & Informasi"
+      },
+      {
+        id: "usr_pegawai",
+        nama: "Staf Pegawai",
+        username: "user",
+        password: "user123",
+        role: "user",
+        unit: "Subbagian Umum"
+      }
+    ];
+
+    // Contoh Jadwal Awal
+    const todayStr = new Date().toISOString().split('T')[0];
+    const SEED_JADWAL = [
+      {
+        id: "jdw_1",
+        ruangan: "Ruang Rapat Jaya Wijaya",
+        agenda: "Rapat Koordinasi Pimpinan Evaluasi Kinerja",
+        tanggal: todayStr,
+        mulai: "09:00",
+        selesai: "11:30",
+        pic: "Bpk. Hendrawan",
+        unit: "Sekretariat Utama",
+        peserta: 30,
+        catatan: "Siapkan videowall & audio VIP"
+      },
+      {
+        id: "jdw_2",
+        ruangan: "Ruang Rapat Rinjani",
+        agenda: "Sosialisasi Penerapan Tata Kelola Digital",
+        tanggal: todayStr,
+        mulai: "13:30",
+        selesai: "15:30",
+        pic: "Ibu Rahmawati",
+        unit: "Divisi Kepegawaian",
+        peserta: 20,
+        catatan: "Zoom hybrid meeting"
+      }
+    ];
+
+    // State Aplikasi
+    let state = {
+      currentUser: null,
+      jadwalList: [],
+      usersList: []
     };
 
-    // Firebase Initialization configuration
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'siarap-system-prod';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config) 
-      : {
-          apiKey: "AIzaSyDemoDummyKeyForAppOnly456789",
-          authDomain: "siarap-demo.firebaseapp.com",
-          projectId: "siarap-demo",
-          storageBucket: "siarap-demo.appspot.com",
-          messagingSenderId: "123456789",
-          appId: "1:123456789:web:abcdef123456"
-        };
+    // Helper Toast
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      
+      const bgColors = {
+        success: "bg-emerald-600 text-white",
+        error: "bg-rose-600 text-white",
+        warning: "bg-amber-500 text-white",
+        info: "bg-indigo-600 text-white"
+      };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Rule 1: Public paths for collaborative meeting data
-    const MEETINGS_COLLECTION = 'siarap_meetings';
-    const USERS_COLLECTION = 'siarap_users';
-
-    function getPublicCol(collectionName) {
-      return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
-    }
-    function getPublicDoc(collectionName, docId) {
-      return doc(db, 'artifacts', appId, 'public', 'data', collectionName, docId);
+      toast.className = `p-3.5 rounded-xl shadow-xl text-xs font-medium flex items-center gap-2 transform transition-all duration-300 pointer-events-auto ${bgColors[type] || bgColors.info}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add("opacity-0", "-translate-y-2");
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
     }
 
-    async function startApp() {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-        console.log("Firebase Auth connected:", auth.currentUser?.uid);
-        
-        // Start listening to real-time streams
-        initFirestoreListeners();
-      } catch (err) {
-        console.warn("Auth note (running in safe mode):", err);
-        // Fallback: start listeners even if mock auth is active
-        initFirestoreListeners();
-      }
-    }
-
-    // Default Seed Data Generator (seeds admin and basic meetings if cloud is empty)
-    async function seedInitialDataIfNeeded(existingUsers, existingMeetings) {
-      // Seed default admin if user collection is completely empty
-      if (existingUsers.length === 0) {
-        const defaultAdmin = {
-          name: "Administrator SIARAP",
-          email: "admin@siarap.go.id",
-          password: "admin123",
-          role: "admin",
-          createdAt: new Date().toISOString()
-        };
-        const defaultUser = {
-          name: "Pegawai Staf",
-          email: "pegawai@siarap.go.id",
-          password: "user123",
-          role: "user",
-          createdAt: new Date().toISOString()
-        };
-        try {
-          await addDoc(getPublicCol(USERS_COLLECTION), defaultAdmin);
-          await addDoc(getPublicCol(USERS_COLLECTION), defaultUser);
-        } catch (e) {
-          console.error("Error seeding users:", e);
-        }
+    // Sinkronisasi Penyimpanan
+    function initDataStore() {
+      const storedUsers = localStorage.getItem("siarap_users_v2");
+      if (storedUsers) {
+        state.usersList = JSON.parse(storedUsers);
+      } else {
+        state.usersList = SEED_USERS;
+        localStorage.setItem("siarap_users_v2", JSON.stringify(SEED_USERS));
       }
 
-      // Seed sample meetings if meeting collection is empty
-      if (existingMeetings.length === 0) {
-        const todayStr = getTodayDateString();
-        const sampleMeetings = [
-          {
-            topik: "Rapat Koordinasi Evaluasi Program Kerja",
-            ruang: "Ruang Rapat Rinjani",
-            tanggal: todayStr,
-            jamMulai: "09:00",
-            jamSelesai: "11:30",
-            penyelenggara: "Biro Perencanaan & Organisasi",
-            peserta: 25,
-            fasilitas: ["Proyektor / LCD", "Sound & Mic Wireless", "Snack & Coffee Break"],
-            createdBy: "admin",
-            createdAt: new Date().toISOString()
-          },
-          {
-            topik: "FGD Penyusunan SOP Layanan Digital",
-            ruang: "Ruang Rapat Semeru",
-            tanggal: todayStr,
-            jamMulai: "13:30",
-            jamSelesai: "16:00",
-            penyelenggara: "Pusat Data dan Informasi (Pusdatin)",
-            peserta: 18,
-            fasilitas: ["Zoom / Hybrid System", "Whiteboard / Flipchart"],
-            createdBy: "admin",
-            createdAt: new Date().toISOString()
-          },
-          {
-            topik: "Briefing Pimpinan & Evaluasi Mingguan",
-            ruang: "Ruang Rapat Jaya Wijaya",
-            tanggal: todayStr,
-            jamMulai: "10:00",
-            jamSelesai: "12:00",
-            penyelenggara: "Sekretariat Utama",
-            peserta: 30,
-            fasilitas: ["Proyektor / LCD", "Zoom / Hybrid System", "Snack & Coffee Break"],
-            createdBy: "admin",
-            createdAt: new Date().toISOString()
-          }
-        ];
-
-        for (const m of sampleMeetings) {
-          try {
-            await addDoc(getPublicCol(MEETINGS_COLLECTION), m);
-          } catch (err) {
-            console.error("Error seeding meeting:", err);
-          }
-        }
+      const storedJadwal = localStorage.getItem("siarap_jadwal_v2");
+      if (storedJadwal) {
+        state.jadwalList = JSON.parse(storedJadwal);
+      } else {
+        state.jadwalList = SEED_JADWAL;
+        localStorage.setItem("siarap_jadwal_v2", JSON.stringify(SEED_JADWAL));
       }
+
+      renderJadwalTable();
+      renderUsersTable();
+      renderRuanganGrid();
+      renderSignage();
     }
 
-    function initFirestoreListeners() {
-      // 1. Listen for Users (Rule 2: No complex queries, fetch collection and filter/sort in memory)
-      onSnapshot(getPublicCol(USERS_COLLECTION), (snapshot) => {
-        const usersList = [];
-        snapshot.forEach(d => {
-          usersList.push({ id: d.id, ...d.data() });
-        });
-        window.AppState.users = usersList;
-        renderUsersTable();
-        updateDashboardMetrics();
+    // Validasi Login Ketat (Tanpa Cepat / Tanpa Kosong)
+    const formLogin = document.getElementById("form-login");
+    const loginErrorAlert = document.getElementById("login-error-alert");
+    const loginErrorMsg = document.getElementById("login-error-msg");
 
-        // Check if seeding is required
-        if (usersList.length === 0) {
-          seedInitialDataIfNeeded(usersList, window.AppState.meetings);
-        }
-      }, (error) => {
-        console.error("Users snapshot error:", error);
-        showToast("Koneksi cloud users terganggu, menggunakan sesi lokal.", "error");
-      });
+    formLogin.addEventListener("submit", (e) => {
+      e.preventDefault();
+      
+      const usernameInput = document.getElementById("login-username").value.trim();
+      const passwordInput = document.getElementById("login-password").value;
 
-      // 2. Listen for Meetings
-      onSnapshot(getPublicCol(MEETINGS_COLLECTION), (snapshot) => {
-        const meetingsList = [];
-        snapshot.forEach(d => {
-          meetingsList.push({ id: d.id, ...d.data() });
-        });
-        // Sort by date then start time
-        meetingsList.sort((a, b) => {
-          if (a.tanggal === b.tanggal) {
-            return (a.jamMulai || '').localeCompare(b.jamMulai || '');
-          }
-          return (a.tanggal || '').localeCompare(b.tanggal || '');
-        });
+      if (!usernameInput || !passwordInput) {
+        loginErrorMsg.textContent = "Silakan masukkan Username dan Password Anda.";
+        loginErrorAlert.classList.remove("hidden");
+        return;
+      }
 
-        window.AppState.meetings = meetingsList;
-        
-        // Refresh active views
-        renderRoomStatusCards();
-        renderTodayMeetingsList();
-        renderScheduleView();
-        renderDisplayBoard();
-        updateDashboardMetrics();
-
-        if (meetingsList.length === 0 && window.AppState.users.length > 0) {
-          seedInitialDataIfNeeded(window.AppState.users, meetingsList);
-        }
-      }, (error) => {
-        console.error("Meetings snapshot error:", error);
-        showToast("Koneksi cloud jadwal terganggu.", "error");
-      });
-    }
-
-    window.handleLogin = function(email, password) {
-      const users = window.AppState.users;
-      // Find matching user from cloud user list
-      const matched = users.find(u => 
-        u.email.toLowerCase().trim() === email.toLowerCase().trim() && 
-        u.password === password
+      // Cari user yang cocok berdasarkan username dan password
+      const matchedUser = state.usersList.find(u => 
+        u.username.toLowerCase() === usernameInput.toLowerCase() && 
+        u.password === passwordInput
       );
 
-      if (!matched) {
-        // Fallback for immediate default admin login if cloud is still syncing
-        if (email.toLowerCase().trim() === 'admin@siarap.go.id' && password === 'admin123') {
-          setSession({
-            id: 'default-admin',
-            name: 'Administrator SIARAP',
-            email: 'admin@siarap.go.id',
-            role: 'admin'
-          });
-          return true;
-        }
-        if (email.toLowerCase().trim() === 'pegawai@siarap.go.id' && password === 'user123') {
-          setSession({
-            id: 'default-user',
-            name: 'Pegawai Staf',
-            email: 'pegawai@siarap.go.id',
-            role: 'user'
-          });
-          return true;
-        }
-        return false;
-      }
-
-      setSession(matched);
-      return true;
-    };
-
-    function setSession(user) {
-      window.AppState.currentUser = user;
-      document.getElementById('authScreen').classList.add('hidden');
-      document.getElementById('mainApp').classList.remove('hidden');
-
-      // Update UI Header
-      document.getElementById('currentUserName').textContent = user.name || 'Pengguna';
-      document.getElementById('currentUserEmail').textContent = user.email || '';
-      const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      document.getElementById('userAvatar').textContent = initials;
-
-      const roleBadge = document.getElementById('roleBadge');
-      if (user.role === 'admin') {
-        roleBadge.textContent = 'ADMIN';
-        roleBadge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-100 text-brand-700';
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      if (matchedUser) {
+        loginErrorAlert.classList.add("hidden");
+        loginSuccess(matchedUser);
       } else {
-        roleBadge.textContent = 'USER';
-        roleBadge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700';
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+        loginErrorMsg.textContent = "Username atau Password salah! Pastikan data akun yang diberikan Admin sudah sesuai.";
+        loginErrorAlert.classList.remove("hidden");
+      }
+    });
+
+    // Toggle Lihat Password pada Form Login
+    document.getElementById("btn-toggle-login-pass").addEventListener("click", () => {
+      const passInput = document.getElementById("login-password");
+      const icon = document.getElementById("icon-toggle-login");
+      if (passInput.type === "password") {
+        passInput.type = "text";
+        icon.setAttribute("data-lucide", "eye-off");
+      } else {
+        passInput.type = "password";
+        icon.setAttribute("data-lucide", "eye");
+      }
+      lucide.createIcons();
+    });
+
+    function loginSuccess(user) {
+      state.currentUser = user;
+      document.getElementById("view-login").classList.add("hidden");
+      document.getElementById("view-app").classList.remove("hidden");
+
+      document.getElementById("current-user-name").textContent = user.nama;
+      const roleBadge = document.getElementById("current-user-role-badge");
+      
+      if (user.role === 'admin') {
+        roleBadge.textContent = 'Administrator';
+        roleBadge.className = "px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] uppercase font-bold";
+        
+        // Akses Admin: Buka tombol tambah jadwal & menu kelola user
+        document.getElementById("btn-tambah-jadwal").classList.remove("hidden");
+        document.getElementById("btn-tambah-jadwal").classList.add("flex");
+        document.getElementById("nav-users").classList.remove("hidden");
+        document.getElementById("nav-users").classList.add("flex");
+        document.getElementById("m-nav-users").classList.remove("hidden");
+        document.getElementById("m-nav-users").classList.add("flex");
+        document.getElementById("user-view-info").textContent = "Anda masuk sebagai Administrator (dapat menginput jadwal & mengelola user).";
+        document.querySelectorAll(".col-aksi").forEach(el => el.classList.remove("hidden"));
+      } else {
+        roleBadge.textContent = 'Pegawai (View Only)';
+        roleBadge.className = "px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] uppercase font-bold";
+        
+        // Akses User Biasa: Sembunyikan kontrol admin
+        document.getElementById("btn-tambah-jadwal").classList.add("hidden");
+        document.getElementById("btn-tambah-jadwal").classList.remove("flex");
+        document.getElementById("nav-users").classList.add("hidden");
+        document.getElementById("nav-users").classList.remove("flex");
+        document.getElementById("m-nav-users").classList.add("hidden");
+        document.getElementById("m-nav-users").classList.remove("flex");
+        document.getElementById("user-view-info").textContent = "Anda masuk sebagai Pegawai (Akses hanya melihat jadwal / View Only).";
+        document.querySelectorAll(".col-aksi").forEach(el => el.classList.add("hidden"));
       }
 
-      showToast(`Selamat datang, ${user.name}! Anda masuk sebagai ${user.role.toUpperCase()}`, "success");
-      switchTab('dashboard');
+      renderJadwalTable();
+      showToast(`Login berhasil. Selamat datang, ${user.nama}!`, "success");
+      lucide.createIcons();
     }
 
-    window.handleLogout = function() {
-      window.AppState.currentUser = null;
-      document.getElementById('mainApp').classList.add('hidden');
-      document.getElementById('authScreen').classList.remove('hidden');
-      document.getElementById('loginPassword').value = '';
-      showToast("Anda telah keluar dari aplikasi SIARAP.", "info");
-    };
+    // Tombol Logout
+    document.getElementById("btn-logout").addEventListener("click", () => {
+      state.currentUser = null;
+      document.getElementById("login-username").value = "";
+      document.getElementById("login-password").value = "";
+      document.getElementById("login-error-alert").classList.add("hidden");
+      document.getElementById("view-app").classList.add("hidden");
+      document.getElementById("view-login").classList.remove("hidden");
+      showToast("Anda telah keluar dari aplikasi.", "info");
+      lucide.createIcons();
+    });
 
-    window.fillQuickLogin = function(email, pass) {
-      document.getElementById('loginEmail').value = email;
-      document.getElementById('loginPassword').value = pass;
-    };
+    // Validasi Bentrok Jadwal Rapat (Jam dan Ruang Sama)
+    function checkConflict(room, date, startTime, endTime, excludeId = null) {
+      const startMin = timeToMinutes(startTime);
+      const endMin = timeToMinutes(endTime);
 
-    window.togglePasswordVisibility = function(inputId, btn) {
-      const input = document.getElementById(inputId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        btn.innerHTML = '<i class="ph ph-eye-slash"></i>';
-      } else {
-        input.type = 'password';
-        btn.innerHTML = '<i class="ph ph-eye"></i>';
-      }
-    };
-
-    /**
-     * Checks if a new or updated meeting conflicts with existing schedules.
-     * Prevents overlapping bookings for the SAME ROOM on the SAME DATE.
-     */
-    function checkMeetingConflict(roomId, date, start, end, excludeId = null) {
-      const allMeetings = window.AppState.meetings;
-      
-      const newStartMin = timeToMinutes(start);
-      const newEndMin = timeToMinutes(end);
-
-      if (newEndMin <= newStartMin) {
-        return {
-          conflict: true,
-          message: "Jam Selesai harus lebih lambat dari Jam Mulai."
-        };
+      if (startMin >= endMin) {
+        return { conflict: true, reason: "Jam selesai harus lebih besar dari jam mulai!" };
       }
 
-      for (const m of allMeetings) {
-        // Skip current meeting being edited
-        if (excludeId && m.id === excludeId) continue;
-
-        if (m.ruang === roomId && m.tanggal === date) {
-          const mStartMin = timeToMinutes(m.jamMulai);
-          const mEndMin = timeToMinutes(m.jamSelesai);
-
-          // Overlap condition: start < existingEnd AND end > existingStart
-          if (newStartMin < mEndMin && newEndMin > mStartMin) {
+      for (const item of state.jadwalList) {
+        if (excludeId && item.id === excludeId) continue;
+        if (item.ruangan === room && item.tanggal === date) {
+          const itemStart = timeToMinutes(item.mulai);
+          const itemEnd = timeToMinutes(item.selesai);
+          
+          // Bentrok jika interval waktu saling tumpang tindih
+          if (startMin < itemEnd && endMin > itemStart) {
             return {
               conflict: true,
-              message: `Bentrok Jadwal! Ruangan "${roomId}" sudah terisi oleh "${m.topik}" (${m.jamMulai} - ${m.jamSelesai} WIB oleh ${m.penyelenggara}).`
+              reason: `Bentrok! Ruangan ini sudah dipakai untuk "${item.agenda}" (${item.mulai} - ${item.selesai} WIB oleh ${item.unit}).`
             };
           }
         }
       }
-
       return { conflict: false };
     }
 
-    function timeToMinutes(tStr) {
-      if (!tStr) return 0;
-      const [h, m] = tStr.split(':').map(Number);
-      return (h * 60) + m;
+    function timeToMinutes(t) {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
     }
 
-    function getTodayDateString() {
-      const d = new Date();
-      const yr = d.getFullYear();
-      const mo = String(d.getMonth() + 1).padStart(2, '0');
-      const da = String(d.getDate()).padStart(2, '0');
-      return `${yr}-${mo}-${da}`;
+    // Simpan Jadwal Rapat (Hanya Admin)
+    const formJadwal = document.getElementById("form-jadwal");
+    formJadwal.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!state.currentUser || state.currentUser.role !== 'admin') {
+        showToast("Hanya Administrator yang memiliki akses untuk menginput jadwal!", "error");
+        return;
+      }
+
+      const id = document.getElementById("jadwal-id").value;
+      const ruangan = document.getElementById("jadwal-room").value;
+      const agenda = document.getElementById("jadwal-agenda").value.trim();
+      const tanggal = document.getElementById("jadwal-date").value;
+      const mulai = document.getElementById("jadwal-start-time").value;
+      const selesai = document.getElementById("jadwal-end-time").value;
+      const pic = document.getElementById("jadwal-pic").value.trim();
+      const unit = document.getElementById("jadwal-unit").value.trim();
+      const peserta = parseInt(document.getElementById("jadwal-peserta").value) || 0;
+      const catatan = document.getElementById("jadwal-notes").value.trim();
+
+      const validation = checkConflict(ruangan, tanggal, mulai, selesai, id);
+      const conflictBox = document.getElementById("conflict-warning");
+      const conflictMsg = document.getElementById("conflict-message");
+
+      if (validation.conflict) {
+        conflictMsg.textContent = validation.reason;
+        conflictBox.classList.remove("hidden");
+        return;
+      } else {
+        conflictBox.classList.add("hidden");
+      }
+
+      const payload = {
+        ruangan,
+        agenda,
+        tanggal,
+        mulai,
+        selesai,
+        pic,
+        unit,
+        peserta,
+        catatan,
+        updatedAt: new Date().toISOString(),
+        updatedBy: state.currentUser.nama
+      };
+
+      if (id) {
+        const idx = state.jadwalList.findIndex(j => j.id === id);
+        if (idx !== -1) {
+          state.jadwalList[idx] = { ...state.jadwalList[idx], ...payload };
+        }
+        showToast("Jadwal rapat berhasil diubah!", "success");
+      } else {
+        const newId = "jdw_" + Date.now();
+        state.jadwalList.unshift({ id: newId, ...payload });
+        showToast("Jadwal rapat baru berhasil disimpan ke cloud!", "success");
+      }
+
+      localStorage.setItem("siarap_jadwal_v2", JSON.stringify(state.jadwalList));
+      closeModal('modal-jadwal');
+      renderJadwalTable();
+      renderSignage();
+    });
+
+    // Render Tabel Jadwal Rapat
+    function renderJadwalTable() {
+      const tbody = document.getElementById("table-jadwal-body");
+      const emptyState = document.getElementById("jadwal-empty-state");
+      const filterSearch = document.getElementById("filter-search").value.toLowerCase();
+      const filterRoom = document.getElementById("filter-room").value;
+      const filterDate = document.getElementById("filter-date").value;
+      const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+
+      let list = [...state.jadwalList];
+
+      if (filterRoom !== 'ALL') {
+        list = list.filter(item => item.ruangan === filterRoom);
+      }
+      if (filterDate) {
+        list = list.filter(item => item.tanggal === filterDate);
+      }
+      if (filterSearch) {
+        list = list.filter(item => 
+          item.agenda.toLowerCase().includes(filterSearch) ||
+          item.unit.toLowerCase().includes(filterSearch) ||
+          item.pic.toLowerCase().includes(filterSearch)
+        );
+      }
+
+      list.sort((a, b) => (a.tanggal + a.mulai).localeCompare(b.tanggal + b.mulai));
+
+      tbody.innerHTML = "";
+
+      if (list.length === 0) {
+        emptyState.classList.remove("hidden");
+      } else {
+        emptyState.classList.add("hidden");
+        list.forEach(j => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+
+          tr.innerHTML = `
+            <td class="py-3 px-4">
+              <span class="font-bold text-slate-800">${j.ruangan}</span>
+              ${j.catatan ? `<div class="text-[10px] text-slate-400 mt-0.5">Catatan: ${j.catatan}</div>` : ''}
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <div class="font-semibold text-slate-800">${formatDateIndo(j.tanggal)}</div>
+              <div class="text-[11px] text-indigo-600 font-bold flex items-center gap-1 mt-0.5">
+                <i data-lucide="clock" class="w-3 h-3"></i>
+                ${j.mulai} - ${j.selesai} WIB
+              </div>
+            </td>
+            <td class="py-3 px-4 font-semibold text-slate-800">
+              ${j.agenda}
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-slate-800 font-medium">${j.unit}</div>
+              <div class="text-[10px] text-slate-400">PIC: ${j.pic}</div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
+                ${j.peserta || '-'} Org
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${getStatusBadge(j.tanggal, j.mulai, j.selesai)}
+            </td>
+            <td class="py-3 px-4 text-right no-print col-aksi ${isAdmin ? '' : 'hidden'}">
+              <div class="flex items-center justify-end gap-1">
+                <button onclick="editJadwal('${j.id}')" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="Edit Jadwal">
+                  <i data-lucide="edit-2" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteJadwal('${j.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="Hapus Jadwal">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      lucide.createIcons();
     }
 
-    function formatIndonesianDate(dateStr) {
+    function formatDateIndo(dateStr) {
       if (!dateStr) return "-";
       const parts = dateStr.split('-');
       if (parts.length !== 3) return dateStr;
-      const date = new Date(parts[0], parts[1] - 1, parts[2]);
-      return date.toLocaleDateString('id-ID', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return `${parts[2]} ${months[parseInt(parts[1]) - 1]} ${parts[0]}`;
     }
 
-    function renderRoomStatusCards() {
-      const container = document.getElementById('roomStatusGrid');
-      if (!container) return;
-      container.innerHTML = '';
-
-      const todayStr = getTodayDateString();
+    function getStatusBadge(tgl, mulai, selesai) {
       const now = new Date();
-      const nowMinutes = (now.getHours() * 60) + now.getMinutes();
+      const today = now.toISOString().split('T')[0];
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      window.AppState.roomsMeta.forEach(room => {
-        // Find meetings in this room today
-        const roomTodayMeetings = window.AppState.meetings
-          .filter(m => m.ruang === room.name && m.tanggal === todayStr)
-          .sort((a, b) => (a.jamMulai || '').localeCompare(b.jamMulai || ''));
-
-        // Determine if currently occupied or vacant
-        let currentMeeting = null;
-        let nextMeeting = null;
-
-        for (const m of roomTodayMeetings) {
-          const sMin = timeToMinutes(m.jamMulai);
-          const eMin = timeToMinutes(m.jamSelesai);
-
-          if (nowMinutes >= sMin && nowMinutes < eMin) {
-            currentMeeting = m;
-          } else if (nowMinutes < sMin && !nextMeeting) {
-            nextMeeting = m;
-          }
+      if (tgl < today) {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">Selesai</span>`;
+      } else if (tgl === today) {
+        if (currentTime < mulai) {
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">Akan Datang</span>`;
+        } else if (currentTime >= mulai && currentTime <= selesai) {
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 animate-pulse">Berlangsung</span>`;
+        } else {
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">Selesai</span>`;
         }
+      } else {
+        return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Terjadwal</span>`;
+      }
+    }
 
-        const isOccupied = !!currentMeeting;
-        const statusBadge = isOccupied 
-          ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200">
-               <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span> DIGUNAKAN
-             </span>`
-          : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-               <span class="w-2 h-2 rounded-full bg-emerald-500"></span> TERSEDIA
-             </span>`;
+    // Modal Triggers
+    document.getElementById("btn-tambah-jadwal").addEventListener("click", () => {
+      formJadwal.reset();
+      document.getElementById("jadwal-id").value = "";
+      document.getElementById("modal-jadwal-title").textContent = "Input Jadwal Rapat Baru";
+      document.getElementById("jadwal-date").value = new Date().toISOString().split('T')[0];
+      document.getElementById("conflict-warning").classList.add("hidden");
+      openModal('modal-jadwal');
+    });
 
-        const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between";
+    window.editJadwal = function(id) {
+      const item = state.jadwalList.find(j => j.id === id);
+      if (!item) return;
+
+      document.getElementById("jadwal-id").value = item.id;
+      document.getElementById("jadwal-room").value = item.ruangan;
+      document.getElementById("jadwal-agenda").value = item.agenda;
+      document.getElementById("jadwal-date").value = item.tanggal;
+      document.getElementById("jadwal-start-time").value = item.mulai;
+      document.getElementById("jadwal-end-time").value = item.selesai;
+      document.getElementById("jadwal-pic").value = item.pic;
+      document.getElementById("jadwal-unit").value = item.unit;
+      document.getElementById("jadwal-peserta").value = item.peserta || '';
+      document.getElementById("jadwal-notes").value = item.catatan || '';
+      document.getElementById("modal-jadwal-title").textContent = "Ubah Jadwal Rapat";
+      document.getElementById("conflict-warning").classList.add("hidden");
+
+      openModal('modal-jadwal');
+    };
+
+    window.deleteJadwal = function(id) {
+      showConfirmDialog("Hapus Jadwal Rapat", "Apakah Anda yakin ingin membatalkan dan menghapus jadwal rapat ini dari cloud?", () => {
+        state.jadwalList = state.jadwalList.filter(j => j.id !== id);
+        localStorage.setItem("siarap_jadwal_v2", JSON.stringify(state.jadwalList));
+        showToast("Jadwal rapat berhasil dihapus.", "info");
+        renderJadwalTable();
+        renderSignage();
+      });
+    };
+
+    // Filter Events
+    document.getElementById("filter-search").addEventListener("input", renderJadwalTable);
+    document.getElementById("filter-room").addEventListener("change", renderJadwalTable);
+    document.getElementById("filter-date").addEventListener("change", renderJadwalTable);
+    document.getElementById("btn-reset-filter").addEventListener("click", () => {
+      document.getElementById("filter-search").value = "";
+      document.getElementById("filter-room").value = "ALL";
+      document.getElementById("filter-date").value = "";
+      renderJadwalTable();
+    });
+
+    // ================= MANAJEMEN USER (ADMIN ONLY) =================
+    function renderUsersTable() {
+      const tbody = document.getElementById("table-users-body");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      state.usersList.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-slate-800">${u.nama}</td>
+          <td class="py-3 px-4 font-mono text-xs text-indigo-700 font-semibold">${u.username}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded ${
+              u.role === 'admin' 
+                ? 'bg-indigo-100 text-indigo-700' 
+                : 'bg-emerald-100 text-emerald-700'
+            }">
+              ${u.role.toUpperCase()}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-slate-600">${u.unit || '-'}</td>
+          <td class="py-3 px-4 font-mono text-xs text-slate-500">
+            <span class="font-semibold text-slate-800">${u.password}</span>
+          </td>
+          <td class="py-3 px-4 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button onclick="editUser('${u.id}')" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg" title="Edit Data & Reset Password">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteUser('${u.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg" title="Hapus User">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    const formUser = document.getElementById("form-user");
+    formUser.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!state.currentUser || state.currentUser.role !== 'admin') return;
+
+      const id = document.getElementById("user-id").value;
+      const nama = document.getElementById("user-nama").value.trim();
+      const username = document.getElementById("user-username").value.trim().toLowerCase();
+      const password = document.getElementById("user-password").value.trim();
+      const role = document.getElementById("user-role").value;
+      const unit = document.getElementById("user-unit").value.trim();
+
+      if (id) {
+        // Edit User
+        const idx = state.usersList.findIndex(u => u.id === id);
+        if (idx !== -1) {
+          state.usersList[idx] = { ...state.usersList[idx], nama, username, password, role, unit };
+          showToast(`Akun ${nama} berhasil diperbarui! Password baru: ${password}`, "success");
+        }
+      } else {
+        // Tambah User Baru
+        const exists = state.usersList.some(u => u.username.toLowerCase() === username);
+        if (exists) {
+          showToast("Username tersebut sudah digunakan! Silakan buat username lain.", "error");
+          return;
+        }
+        const newUser = {
+          id: "usr_" + Date.now(),
+          nama,
+          username,
+          password,
+          role,
+          unit
+        };
+        state.usersList.push(newUser);
+        showToast(`User baru "${username}" berhasil dibuat dengan password "${password}"!`, "success");
+      }
+
+      localStorage.setItem("siarap_users_v2", JSON.stringify(state.usersList));
+      closeModal("modal-user");
+      renderUsersTable();
+    });
+
+    document.getElementById("btn-tambah-user").addEventListener("click", () => {
+      formUser.reset();
+      document.getElementById("user-id").value = "";
+      document.getElementById("modal-user-title").textContent = "Tambah Akun Pengguna";
+      openModal("modal-user");
+    });
+
+    window.editUser = function(id) {
+      const u = state.usersList.find(x => x.id === id);
+      if (!u) return;
+
+      document.getElementById("user-id").value = u.id;
+      document.getElementById("user-nama").value = u.nama;
+      document.getElementById("user-username").value = u.username;
+      document.getElementById("user-password").value = u.password;
+      document.getElementById("user-role").value = u.role;
+      document.getElementById("user-unit").value = u.unit || '';
+      document.getElementById("modal-user-title").textContent = "Edit User & Reset Password";
+      openModal("modal-user");
+    };
+
+    window.deleteUser = function(id) {
+      if (state.currentUser && state.currentUser.id === id) {
+        showToast("Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif!", "warning");
+        return;
+      }
+      showConfirmDialog("Hapus Pengguna", "Apakah Anda yakin ingin menghapus user ini? Pengguna tidak akan bisa login lagi.", () => {
+        state.usersList = state.usersList.filter(u => u.id !== id);
+        localStorage.setItem("siarap_users_v2", JSON.stringify(state.usersList));
+        showToast("User berhasil dihapus.", "info");
+        renderUsersTable();
+      });
+    };
+
+    // Render Fasilitas Ruangan
+    function renderRuanganGrid() {
+      const container = document.getElementById("grid-ruangan");
+      container.innerHTML = "";
+
+      RUANGAN_DATA.forEach(r => {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition";
         card.innerHTML = `
           <div>
-            <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="flex justify-between items-start mb-2.5">
               <div>
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">${room.floor} &bull; Kapasitas ${room.capacity}</span>
-                <h4 class="text-base font-extrabold text-slate-900 mt-0.5">${room.name}</h4>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">${r.lantai}</span>
+                <h3 class="text-base font-bold text-slate-800 mt-1">${r.nama}</h3>
               </div>
-              ${statusBadge}
+              <div class="p-2 bg-slate-50 rounded-xl text-slate-500">
+                <i data-lucide="door-closed" class="w-5 h-5"></i>
+              </div>
             </div>
             
-            <p class="text-xs text-slate-500 mb-4 line-clamp-2">${room.desc}</p>
-
-            <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-4">
-              ${isOccupied ? `
-                <div class="text-[11px] font-bold text-rose-600 flex items-center gap-1 mb-1">
-                  <i class="ph-bold ph-broadcast"></i> Sedang Berlangsung (${currentMeeting.jamMulai} - ${currentMeeting.jamSelesai} WIB)
-                </div>
-                <div class="text-xs font-bold text-slate-800 line-clamp-1">${currentMeeting.topik}</div>
-                <div class="text-[11px] text-slate-500">${currentMeeting.penyelenggara}</div>
-              ` : nextMeeting ? `
-                <div class="text-[11px] font-bold text-amber-600 flex items-center gap-1 mb-1">
-                  <i class="ph-bold ph-clock"></i> Jadwal Berikutnya (${nextMeeting.jamMulai} - ${nextMeeting.jamSelesai} WIB)
-                </div>
-                <div class="text-xs font-bold text-slate-800 line-clamp-1">${nextMeeting.topik}</div>
-                <div class="text-[11px] text-slate-500">${nextMeeting.penyelenggara}</div>
-              ` : `
-                <div class="text-xs text-emerald-600 font-medium flex items-center gap-1.5 py-1">
-                  <i class="ph-bold ph-check-circle"></i> Tidak ada agenda lagi hari ini.
-                </div>
-              `}
+            <div class="flex items-center gap-1.5 text-xs text-slate-600 font-semibold mb-3.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i>
+              Kapasitas: ${r.kapasitas}
             </div>
 
-            <div class="flex flex-wrap gap-1 mb-3">
-              ${room.facilities.map(f => `<span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-600">${f}</span>`).join('')}
+            <div class="border-t border-slate-100 pt-3">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Fasilitas Utama:</span>
+              <ul class="mt-1.5 space-y-1 text-xs text-slate-600">
+                ${r.fasilitas.map(f => `
+                  <li class="flex items-center gap-1.5">
+                    <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i>
+                    ${f}
+                  </li>
+                `).join('')}
+              </ul>
             </div>
-          </div>
-
-          <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span class="text-[11px] text-slate-400">${roomTodayMeetings.length} agenda hari ini</span>
-            ${window.AppState.currentUser?.role === 'admin' ? `
-              <button onclick="quickBookRoom('${room.name}')" class="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1">
-                Jadwalkan <i class="ph ph-plus"></i>
-              </button>
-            ` : `
-              <button onclick="filterByRoom('${room.name}')" class="text-xs font-medium text-slate-500 hover:text-slate-800 flex items-center gap-1">
-                Detail <i class="ph ph-arrow-right"></i>
-              </button>
-            `}
           </div>
         `;
         container.appendChild(card);
       });
+      lucide.createIcons();
     }
 
-    function renderTodayMeetingsList() {
-      const container = document.getElementById('todayMeetingsList');
+    // Render Display Signage (Live Monitoring)
+    function renderSignage() {
+      const container = document.getElementById("signage-rooms-container");
       if (!container) return;
-      const todayStr = getTodayDateString();
-      const todayMeetings = window.AppState.meetings.filter(m => m.tanggal === todayStr);
-
-      if (todayMeetings.length === 0) {
-        container.innerHTML = `
-          <div class="py-8 text-center text-slate-400 text-xs">
-            <i class="ph-duotone ph-calendar-x text-3xl mb-2 block text-slate-300"></i>
-            Belum ada jadwal pertemuan rapat untuk hari ini.
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = '';
-      todayMeetings.forEach(m => {
-        const item = document.createElement('div');
-        item.className = "p-4 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition";
-        item.innerHTML = `
-          <div class="flex items-start sm:items-center gap-3">
-            <div class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-center flex-shrink-0">
-              <span class="text-xs font-extrabold text-brand-600 block">${m.jamMulai}</span>
-              <span class="text-[10px] text-slate-400 block font-medium">s/d ${m.jamSelesai}</span>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-100 text-brand-700">${m.ruang}</span>
-                ${m.peserta ? `<span class="text-[11px] text-slate-400 flex items-center gap-0.5"><i class="ph ph-users"></i> ${m.peserta} Orang</span>` : ''}
-              </div>
-              <h5 class="text-xs sm:text-sm font-bold text-slate-900 mt-1">${m.topik}</h5>
-              <p class="text-[11px] text-slate-500">${m.penyelenggara}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5 self-end sm:self-center">
-            ${m.fasilitas && m.fasilitas.length ? `
-              <span class="text-[11px] text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-lg" title="${m.fasilitas.join(', ')}">
-                <i class="ph ph-gear"></i> ${m.fasilitas.length} Fasilitas
-              </span>
-            ` : ''}
-            ${window.AppState.currentUser?.role === 'admin' ? `
-              <button onclick="editMeeting('${m.id}')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-white rounded-lg transition" title="Edit">
-                <i class="ph ph-pencil-simple text-sm"></i>
-              </button>
-              <button onclick="confirmDeleteMeeting('${m.id}', '${m.topik.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition" title="Hapus">
-                <i class="ph ph-trash text-sm"></i>
-              </button>
-            ` : ''}
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    window.renderScheduleView = function() {
-      const tbody = document.getElementById('scheduleTableBody');
-      const badge = document.getElementById('scheduleCountBadge');
-      if (!tbody) return;
-
-      const fDate = document.getElementById('filterDate').value;
-      const fRoom = document.getElementById('filterRoom').value;
-      const fKey = (document.getElementById('filterKeyword').value || '').toLowerCase().trim();
-
-      let filtered = window.AppState.meetings.filter(m => {
-        if (fDate && m.tanggal !== fDate) return false;
-        if (fRoom && fRoom !== 'ALL' && m.ruang !== fRoom) return false;
-        if (fKey) {
-          const matchTopik = (m.topik || '').toLowerCase().includes(fKey);
-          const matchUnit = (m.penyelenggara || '').toLowerCase().includes(fKey);
-          if (!matchTopik && !matchUnit) return false;
-        }
-        return true;
-      });
-
-      badge.textContent = `Menampilkan ${filtered.length} dari ${window.AppState.meetings.length} total rapat`;
-
-      // Also update print view
-      renderPrintView(filtered);
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center py-10 text-slate-400 text-xs">
-              <i class="ph-duotone ph-magnifying-glass text-3xl mb-2 block text-slate-300"></i>
-              Tidak ada agenda rapat yang sesuai dengan kriteria filter.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      const isAdmin = window.AppState.currentUser?.role === 'admin';
-      tbody.innerHTML = '';
-
-      filtered.forEach(m => {
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition";
-        tr.innerHTML = `
-          <td class="px-4 py-3.5 whitespace-nowrap">
-            <div class="font-bold text-slate-800">${formatIndonesianDate(m.tanggal)}</div>
-            <div class="text-[11px] text-brand-600 font-semibold mt-0.5">${m.jamMulai} - ${m.jamSelesai} WIB</div>
-          </td>
-          <td class="px-4 py-3.5 whitespace-nowrap">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-              <i class="ph-bold ph-door text-brand-600"></i> ${m.ruang}
-            </span>
-          </td>
-          <td class="px-4 py-3.5">
-            <div class="font-bold text-slate-900 line-clamp-2">${m.topik}</div>
-          </td>
-          <td class="px-4 py-3.5 whitespace-nowrap">
-            <div class="text-slate-700 font-medium">${m.penyelenggara}</div>
-          </td>
-          <td class="px-4 py-3.5">
-            <div class="text-[11px] text-slate-500">${m.peserta ? `${m.peserta} Orang` : '-'}</div>
-            ${m.fasilitas && m.fasilitas.length ? `
-              <div class="text-[10px] text-slate-400 mt-1 line-clamp-1" title="${m.fasilitas.join(', ')}">
-                ${m.fasilitas.join(', ')}
-              </div>
-            ` : '<div class="text-[10px] text-slate-400">-</div>'}
-          </td>
-          <td class="px-4 py-3.5 text-center whitespace-nowrap admin-only ${isAdmin ? '' : 'hidden'}">
-            <div class="flex items-center justify-center gap-1">
-              <button onclick="editMeeting('${m.id}')" class="p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Edit Jadwal">
-                <i class="ph-bold ph-pencil text-sm"></i>
-              </button>
-              <button onclick="confirmDeleteMeeting('${m.id}', '${m.topik.replace(/'/g, "\\'")}')" class="p-2 text-slate-600 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition" title="Hapus Jadwal">
-                <i class="ph-bold ph-trash text-sm"></i>
-              </button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function renderPrintView(data) {
-      const pBody = document.getElementById('printTableBody');
-      const pDate = document.getElementById('printDateGenerated');
-      if (!pBody) return;
-
-      pDate.textContent = `Dicetak pada: ${new Date().toLocaleDateString('id-ID')} pukul ${new Date().toLocaleTimeString('id-ID')}`;
-      pBody.innerHTML = '';
-
-      data.forEach((m, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="border border-black p-2 text-center">${idx + 1}</td>
-          <td class="border border-black p-2">${m.tanggal} (${m.jamMulai} - ${m.jamSelesai})</td>
-          <td class="border border-black p-2 font-bold">${m.ruang}</td>
-          <td class="border border-black p-2 font-medium">${m.topik}</td>
-          <td class="border border-black p-2">${m.penyelenggara}</td>
-          <td class="border border-black p-2 text-center">${m.peserta || '-'}</td>
-        `;
-        pBody.appendChild(tr);
-      });
-    }
-
-    window.resetScheduleFilters = function() {
-      document.getElementById('filterDate').value = '';
-      document.getElementById('filterRoom').value = 'ALL';
-      document.getElementById('filterKeyword').value = '';
-      renderScheduleView();
-    };
-
-    window.filterByRoom = function(roomName) {
-      switchTab('schedule');
-      document.getElementById('filterRoom').value = roomName;
-      renderScheduleView();
-    };
-
-    window.quickBookRoom = function(roomName) {
-      openBookingModal();
-      document.getElementById('mRuang').value = roomName;
-      document.getElementById('mTanggal').value = getTodayDateString();
-    };
-
-    function renderDisplayBoard() {
-      const container = document.getElementById('displayRoomsContainer');
-      if (!container) return;
-      container.innerHTML = '';
-
-      const todayStr = getTodayDateString();
-      const now = new Date();
-      const nowMin = (now.getHours() * 60) + now.getMinutes();
-
-      window.AppState.roomsMeta.forEach(room => {
-        const meetings = window.AppState.meetings
-          .filter(m => m.ruang === room.name && m.tanggal === todayStr)
-          .sort((a, b) => (a.jamMulai || '').localeCompare(b.jamMulai || ''));
-
-        let active = null;
-        let upcoming = [];
-
-        meetings.forEach(m => {
-          const s = timeToMinutes(m.jamMulai);
-          const e = timeToMinutes(m.jamSelesai);
-          if (nowMin >= s && nowMin < e) {
-            active = m;
-          } else if (nowMin < s) {
-            upcoming.push(m);
-          }
-        });
-
-        const panel = document.createElement('div');
-        panel.className = `rounded-2xl p-5 border transition flex flex-col justify-between ${active ? 'bg-slate-800/90 border-rose-500/50 shadow-lg shadow-rose-950/20' : 'bg-slate-800/50 border-slate-700/80'}`;
-        
-        panel.innerHTML = `
-          <div>
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">${room.floor} &bull; ${room.capacity}</span>
-                <h3 class="text-base font-bold text-white mt-0.5">${room.name}</h3>
-              </div>
-              ${active ? `
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span> IN USE
-                </span>
-              ` : `
-                <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  VACANT
-                </span>
-              `}
-            </div>
-
-            ${active ? `
-              <div class="p-3.5 rounded-xl bg-slate-900/80 border border-rose-500/30 mb-4">
-                <div class="text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-1">
-                  Sedang Berlangsung (${active.jamMulai} - ${active.jamSelesai} WIB)
-                </div>
-                <div class="text-sm font-bold text-white line-clamp-2">${active.topik}</div>
-                <div class="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                  <i class="ph ph-buildings"></i> ${active.penyelenggara}
-                </div>
-              </div>
-            ` : `
-              <div class="p-3.5 rounded-xl bg-slate-900/40 border border-slate-700/40 mb-4 text-center py-5">
-                <i class="ph ph-check-circle text-2xl text-emerald-400 block mb-1"></i>
-                <div class="text-xs font-semibold text-slate-300">Ruangan Sedang Kosong</div>
-                <div class="text-[11px] text-slate-500">Siap untuk digunakan sesuai jadwal</div>
-              </div>
-            `}
-
-            <div>
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Jadwal Selanjutnya Hari Ini:</div>
-              ${upcoming.length > 0 ? `
-                <div class="space-y-2 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
-                  ${upcoming.map(u => `
-                    <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-xs">
-                      <div class="flex items-center justify-between text-brand-300 font-bold text-[11px]">
-                        <span>${u.jamMulai} - ${u.jamSelesai} WIB</span>
-                        <span class="text-slate-400 font-normal">${u.peserta ? `${u.peserta} Orang` : ''}</span>
-                      </div>
-                      <div class="text-slate-200 font-medium line-clamp-1 mt-0.5">${u.topik}</div>
-                      <div class="text-[10px] text-slate-400">${u.penyelenggara}</div>
-                    </div>
-                  `).join('')}
-                </div>
-              ` : `
-                <div class="text-xs text-slate-500 italic">Tidak ada jadwal mendatang hari ini.</div>
-              `}
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Fasilitas: ${room.facilities.slice(0, 2).join(', ')}...</span>
-          </div>
-        `;
-        container.appendChild(panel);
-      });
-    }
-
-    function renderUsersTable() {
-      const tbody = document.getElementById('usersTableBody');
-      if (!tbody) return;
-
-      const users = window.AppState.users;
-      if (users.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="5" class="py-8 text-center text-slate-400 text-xs">
-              Belum ada pengguna terdaftar.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      tbody.innerHTML = '';
-      users.forEach(u => {
-        const isCurrentSessionUser = window.AppState.currentUser?.id === u.id || window.AppState.currentUser?.email === u.email;
-        const isAdmin = u.role === 'admin';
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="px-4 py-3 whitespace-nowrap">
-            <div class="flex items-center gap-2.5">
-              <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                ${(u.name || 'U').substring(0, 2).toUpperCase()}
-              </div>
-              <div class="font-bold text-slate-800">${u.name}</div>
-            </div>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap font-mono text-slate-600">${u.email}</td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isAdmin ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-slate-100 text-slate-700'}">
-              ${u.role}
-            </span>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap font-mono text-slate-500">
-            <span class="tracking-widest">••••••••</span>
-            <button onclick="revealUserPassword('${u.password}')" class="ml-2 text-slate-400 hover:text-slate-600 text-xs" title="Lihat password">
-              <i class="ph ph-eye"></i>
-            </button>
-          </td>
-          <td class="px-4 py-3 text-center whitespace-nowrap">
-            <div class="flex items-center justify-center gap-1.5">
-              <button onclick="editUserAccount('${u.id}')" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Edit Akun / Reset Password">
-                <i class="ph-bold ph-pencil text-sm"></i>
-              </button>
-              ${!isCurrentSessionUser ? `
-                <button onclick="confirmDeleteUser('${u.id}', '${u.name.replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition" title="Hapus User">
-                  <i class="ph-bold ph-trash text-sm"></i>
-                </button>
-              ` : `
-                <span class="text-[10px] text-slate-400 px-2">(Akun Anda)</span>
-              `}
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    window.revealUserPassword = function(pwd) {
-      showToast(`Password: ${pwd}`, "info");
-    };
-
-    window.openBookingModal = function() {
-      if (window.AppState.currentUser?.role !== 'admin') {
-        showToast("Hanya Administrator yang memiliki akses untuk menginput jadwal rapat!", "error");
-        return;
-      }
-      document.getElementById('bookingModalTitle').textContent = "Input Jadwal Peminjaman Ruang Rapat";
-      document.getElementById('bookingDocId').value = "";
-      document.getElementById('bookingForm').reset();
-      document.getElementById('mTanggal').value = getTodayDateString();
-      document.getElementById('bookingModal').classList.remove('hidden');
-      document.getElementById('bookingModal').classList.add('flex');
-    };
-
-    window.closeBookingModal = function() {
-      document.getElementById('bookingModal').classList.add('hidden');
-      document.getElementById('bookingModal').classList.remove('flex');
-    };
-
-    window.editMeeting = function(id) {
-      if (window.AppState.currentUser?.role !== 'admin') {
-        showToast("Hanya Administrator yang dapat mengedit jadwal.", "error");
-        return;
-      }
-      const meeting = window.AppState.meetings.find(m => m.id === id);
-      if (!meeting) return;
-
-      document.getElementById('bookingModalTitle').textContent = "Edit Jadwal Peminjaman Ruang Rapat";
-      document.getElementById('bookingDocId').value = meeting.id;
-      document.getElementById('mTopik').value = meeting.topik || "";
-      document.getElementById('mRuang').value = meeting.ruang || "";
-      document.getElementById('mTanggal').value = meeting.tanggal || "";
-      document.getElementById('mJamMulai').value = meeting.jamMulai || "";
-      document.getElementById('mJamSelesai').value = meeting.jamSelesai || "";
-      document.getElementById('mPenyelenggara').value = meeting.penyelenggara || "";
-      document.getElementById('mPeserta').value = meeting.peserta || "";
-
-      // Reset checkboxes
-      document.querySelectorAll('input[name="fasilitas"]').forEach(cb => {
-        cb.checked = meeting.fasilitas && meeting.fasilitas.includes(cb.value);
-      });
-
-      document.getElementById('bookingModal').classList.remove('hidden');
-      document.getElementById('bookingModal').classList.add('flex');
-    };
-
-    // Booking Form Submit Handler
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (window.AppState.currentUser?.role !== 'admin') {
-        showToast("Aksi ditolak: Bukan Administrator.", "error");
-        return;
-      }
-
-      const docId = document.getElementById('bookingDocId').value;
-      const topik = document.getElementById('mTopik').value.trim();
-      const ruang = document.getElementById('mRuang').value;
-      const tanggal = document.getElementById('mTanggal').value;
-      const jamMulai = document.getElementById('mJamMulai').value;
-      const jamSelesai = document.getElementById('mJamSelesai').value;
-      const penyelenggara = document.getElementById('mPenyelenggara').value.trim();
-      const peserta = parseInt(document.getElementById('mPeserta').value) || 0;
-
-      const fasilitasChecked = [];
-      document.querySelectorAll('input[name="fasilitas"]:checked').forEach(cb => {
-        fasilitasChecked.push(cb.value);
-      });
-
-      // Conflict Prevention Check
-      const conflictCheck = checkMeetingConflict(ruang, tanggal, jamMulai, jamSelesai, docId);
-      if (conflictCheck.conflict) {
-        showToast(conflictCheck.message, "error");
-        return;
-      }
-
-      const meetingPayload = {
-        topik,
-        ruang,
-        tanggal,
-        jamMulai,
-        jamSelesai,
-        penyelenggara,
-        peserta,
-        fasilitas: fasilitasChecked,
-        updatedAt: new Date().toISOString(),
-        updatedBy: window.AppState.currentUser.name
-      };
-
-      const submitBtn = document.getElementById('btnSaveBooking');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="ph ph-spinner animate-spin"></i> Menyimpan...`;
-
-      try {
-        if (docId) {
-          // Update existing doc
-          await updateDoc(getPublicDoc(MEETINGS_COLLECTION, docId), meetingPayload);
-          showToast("Jadwal rapat berhasil diperbarui di cloud!", "success");
-        } else {
-          // Add new doc
-          meetingPayload.createdAt = new Date().toISOString();
-          meetingPayload.createdBy = window.AppState.currentUser.name;
-          await addDoc(getPublicCol(MEETINGS_COLLECTION), meetingPayload);
-          showToast("Jadwal rapat baru berhasil disimpan ke cloud!", "success");
-        }
-        closeBookingModal();
-      } catch (err) {
-        console.error("Error saving meeting to Firestore:", err);
-        showToast("Gagal menyimpan ke cloud: " + err.message, "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="ph-bold ph-check"></i> Simpan Jadwal`;
-      }
-    });
-
-    window.confirmDeleteMeeting = function(id, topik) {
-      if (window.AppState.currentUser?.role !== 'admin') return;
-
-      openConfirmModal({
-        title: "Hapus Jadwal Rapat",
-        message: `Apakah Anda yakin ingin membatalkan dan menghapus jadwal "${topik}"?`,
-        iconClass: "text-rose-600 bg-rose-100",
-        btnClass: "bg-rose-600 hover:bg-rose-700",
-        btnText: "Hapus Jadwal",
-        onConfirm: async () => {
-          try {
-            await deleteDoc(getPublicDoc(MEETINGS_COLLECTION, id));
-            showToast("Jadwal rapat berhasil dihapus.", "success");
-          } catch (e) {
-            showToast("Gagal menghapus jadwal: " + e.message, "error");
-          }
-        }
-      });
-    };
-
-    window.openUserModal = function() {
-      if (window.AppState.currentUser?.role !== 'admin') return;
-      document.getElementById('userModalTitle').textContent = "Tambah Akun Pengguna Baru";
-      document.getElementById('userDocId').value = "";
-      document.getElementById('userForm').reset();
-      document.getElementById('uRole').value = "user";
-      document.getElementById('userModal').classList.remove('hidden');
-      document.getElementById('userModal').classList.add('flex');
-    };
-
-    window.closeUserModal = function() {
-      document.getElementById('userModal').classList.add('hidden');
-      document.getElementById('userModal').classList.remove('flex');
-    };
-
-    window.editUserAccount = function(userId) {
-      if (window.AppState.currentUser?.role !== 'admin') return;
-      const user = window.AppState.users.find(u => u.id === userId);
-      if (!user) return;
-
-      document.getElementById('userModalTitle').textContent = "Edit Akun & Reset Password";
-      document.getElementById('userDocId').value = user.id;
-      document.getElementById('uNama').value = user.name || "";
-      document.getElementById('uEmail').value = user.email || "";
-      document.getElementById('uPassword').value = user.password || "";
-      document.getElementById('uRole').value = user.role || "user";
-
-      document.getElementById('userModal').classList.remove('hidden');
-      document.getElementById('userModal').classList.add('flex');
-    };
-
-    // User Form Submit
-    document.getElementById('userForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (window.AppState.currentUser?.role !== 'admin') return;
-
-      const docId = document.getElementById('userDocId').value;
-      const name = document.getElementById('uNama').value.trim();
-      const email = document.getElementById('uEmail').value.trim().toLowerCase();
-      const password = document.getElementById('uPassword').value.trim();
-      const role = document.getElementById('uRole').value;
-
-      // Check unique email if creating new user
-      const existing = window.AppState.users.find(u => u.email.toLowerCase() === email && u.id !== docId);
-      if (existing) {
-        showToast("Email tersebut sudah terdaftar untuk pengguna lain!", "error");
-        return;
-      }
-
-      const userPayload = {
-        name,
-        email,
-        password,
-        role,
-        updatedAt: new Date().toISOString()
-      };
-
-      try {
-        if (docId) {
-          await updateDoc(getPublicDoc(USERS_COLLECTION, docId), userPayload);
-          showToast(`Akun pengguna ${name} berhasil diperbarui!`, "success");
-        } else {
-          userPayload.createdAt = new Date().toISOString();
-          await addDoc(getPublicCol(USERS_COLLECTION), userPayload);
-          showToast(`Pengguna baru ${name} berhasil ditambahkan!`, "success");
-        }
-        closeUserModal();
-      } catch (err) {
-        console.error("Error saving user:", err);
-        showToast("Gagal menyimpan pengguna: " + err.message, "error");
-      }
-    });
-
-    window.confirmDeleteUser = function(id, name) {
-      if (window.AppState.currentUser?.role !== 'admin') return;
-
-      openConfirmModal({
-        title: "Hapus Akun Pengguna",
-        message: `Apakah Anda yakin ingin menghapus akun "${name}" dari sistem SIARAP? Pengguna tidak akan dapat masuk kembali.`,
-        iconClass: "text-rose-600 bg-rose-100",
-        btnClass: "bg-rose-600 hover:bg-rose-700",
-        btnText: "Hapus Pengguna",
-        onConfirm: async () => {
-          try {
-            await deleteDoc(getPublicDoc(USERS_COLLECTION, id));
-            showToast("Pengguna berhasil dihapus.", "success");
-          } catch (e) {
-            showToast("Gagal menghapus pengguna: " + e.message, "error");
-          }
-        }
-      });
-    };
-
-    function updateDashboardMetrics() {
-      const todayStr = getTodayDateString();
-      const todayMeetings = window.AppState.meetings.filter(m => m.tanggal === todayStr);
+      container.innerHTML = "";
 
       const now = new Date();
-      const nowMin = (now.getHours() * 60) + now.getMinutes();
-      const activeMeetings = todayMeetings.filter(m => {
-        const s = timeToMinutes(m.jamMulai);
-        const e = timeToMinutes(m.jamSelesai);
-        return nowMin >= s && nowMin < e;
-      });
+      const today = now.toISOString().split('T')[0];
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      document.getElementById('statTodayMeetings').textContent = todayMeetings.length;
-      document.getElementById('statActiveMeetings').textContent = activeMeetings.length;
-      document.getElementById('statTotalUsers').textContent = window.AppState.users.length;
-      document.getElementById('currentDateLabel').textContent = formatIndonesianDate(todayStr);
+      RUANGAN_DATA.forEach(room => {
+        const activeMeeting = state.jadwalList.find(j => 
+          j.ruangan === room.nama && 
+          j.tanggal === today && 
+          currentTime >= j.mulai && 
+          currentTime <= j.selesai
+        );
+
+        const card = document.createElement("div");
+        card.className = `p-5 rounded-2xl border transition-all ${
+          activeMeeting 
+            ? 'bg-rose-950/40 border-rose-600/50 text-white' 
+            : 'bg-slate-800/60 border-slate-700 text-slate-200'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400">${room.lantai}</span>
+              <h4 class="text-base font-bold">${room.nama}</h4>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+              activeMeeting 
+                ? 'bg-rose-500 text-white animate-pulse' 
+                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            }">
+              ${activeMeeting ? 'IN USE' : 'VACANT'}
+            </span>
+          </div>
+
+          ${
+            activeMeeting 
+              ? `
+                <div class="mt-3 pt-3 border-t border-rose-800/40">
+                  <div class="text-[11px] text-rose-300 font-semibold uppercase">Sedang Berlangsung:</div>
+                  <div class="text-sm font-bold text-white mt-0.5">${activeMeeting.agenda}</div>
+                  <div class="text-xs text-rose-200 mt-1 flex items-center gap-1 font-mono">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i> ${activeMeeting.mulai} - ${activeMeeting.selesai} WIB
+                  </div>
+                  <div class="text-[11px] text-rose-300/80 mt-1">PIC: ${activeMeeting.pic} (${activeMeeting.unit})</div>
+                </div>
+              `
+              : `
+                <div class="mt-3 pt-3 border-t border-slate-700/50">
+                  <div class="text-[11px] text-slate-400">Kondisi:</div>
+                  <div class="text-xs font-semibold text-emerald-400 mt-0.5">Tersedia / Siap Digunakan</div>
+                  <div class="text-[11px] text-slate-500 mt-1">Kapasitas: ${room.kapasitas}</div>
+                </div>
+              `
+          }
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
     }
 
-    // Tab Navigation Logic
+    // Jam Digital Display Signage
+    function updateClock() {
+      const now = new Date();
+      const clockEl = document.getElementById("signage-clock");
+      const dateEl = document.getElementById("signage-date");
+      if (clockEl) {
+        clockEl.textContent = now.toLocaleTimeString('id-ID', { hour12: false }) + " WIB";
+      }
+      if (dateEl) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString('id-ID', options);
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Navigasi Antar Tab
     window.switchTab = function(tabName) {
-      // Guard user tab
-      if (tabName === 'users' && window.AppState.currentUser?.role !== 'admin') {
-        showToast("Hanya Administrator yang dapat mengakses manajemen user.", "error");
+      if (tabName === 'users' && (!state.currentUser || state.currentUser.role !== 'admin')) {
+        showToast("Hanya Administrator yang memiliki akses ke menu Kelola User.", "error");
         return;
       }
 
-      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-
-      // Update Desktop Nav Buttons
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('bg-brand-50', 'text-brand-700', 'font-bold');
-        btn.classList.add('text-slate-600');
+      const tabs = ['jadwal', 'ruangan', 'signage', 'users'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const nav = document.getElementById(`nav-${t}`);
+        const mNav = document.getElementById(`m-nav-${t}`);
+        if (el) el.classList.add('hidden');
+        if (nav) {
+          nav.classList.remove('text-indigo-600', 'bg-indigo-50');
+          nav.classList.add('text-slate-600');
+        }
+        if (mNav) {
+          mNav.classList.remove('text-indigo-600', 'font-semibold');
+          mNav.classList.add('text-slate-600');
+        }
       });
-      const activeBtn = document.getElementById(`nav-${tabName}`);
-      if (activeBtn) {
-        activeBtn.classList.remove('text-slate-600');
-        activeBtn.classList.add('bg-brand-50', 'text-brand-700', 'font-bold');
+
+      const activeEl = document.getElementById(`tab-${tabName}`);
+      const activeNav = document.getElementById(`nav-${tabName}`);
+      const activeMNav = document.getElementById(`m-nav-${tabName}`);
+
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeNav) {
+        activeNav.classList.add('text-indigo-600', 'bg-indigo-50');
+        activeNav.classList.remove('text-slate-600');
+      }
+      if (activeMNav) {
+        activeMNav.classList.add('text-indigo-600', 'font-semibold');
+        activeMNav.classList.remove('text-slate-600');
       }
 
-      // Update Mobile Nav Buttons
-      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        btn.classList.remove('bg-brand-600', 'text-white');
-        btn.classList.add('text-slate-600');
-      });
-      const mActiveBtn = document.getElementById(`m-nav-${tabName}`);
-      if (mActiveBtn) {
-        mActiveBtn.classList.remove('text-slate-600');
-        mActiveBtn.classList.add('bg-brand-600', 'text-white');
-      }
+      if (tabName === 'signage') renderSignage();
+      if (tabName === 'users') renderUsersTable();
+      if (tabName === 'jadwal') renderJadwalTable();
 
-      // Tab specific refresh
-      if (tabName === 'schedule') {
-        renderScheduleView();
-      } else if (tabName === 'display') {
-        renderDisplayBoard();
-      } else if (tabName === 'dashboard') {
-        renderRoomStatusCards();
-        renderTodayMeetingsList();
-        updateDashboardMetrics();
-      }
+      lucide.createIcons();
     };
 
-    // Live Clock Updates
-    function updateLiveClocks() {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString('id-ID', { hour12: false }) + " WIB";
-      
-      const lc = document.getElementById('liveClock');
-      if (lc) lc.textContent = timeStr;
+    // Modal Helpers
+    window.openModal = function(id) {
+      document.getElementById(id).classList.remove('hidden');
+      lucide.createIcons();
+    };
+    window.closeModal = function(id) {
+      document.getElementById(id).classList.add('hidden');
+    };
 
-      const dc = document.getElementById('displayClock');
-      if (dc) dc.textContent = timeStr;
-
-      const dd = document.getElementById('displayDate');
-      if (dd) dd.textContent = formatIndonesianDate(getTodayDateString());
+    // Dialog Konfirmasi Kustom (Pengganti confirm() browser)
+    let confirmCallback = null;
+    function showConfirmDialog(title, message, onOk) {
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-message").textContent = message;
+      confirmCallback = onOk;
+      document.getElementById("confirm-modal").classList.remove("hidden");
+      lucide.createIcons();
     }
-    setInterval(updateLiveClocks, 1000);
-    updateLiveClocks();
-
-    // Confirmation Modal System (Replaces browser confirm)
-    let currentModalConfirmCallback = null;
-    function openConfirmModal({ title, message, iconClass, btnClass, btnText, onConfirm }) {
-      document.getElementById('confirmModalTitle').textContent = title || "Konfirmasi";
-      document.getElementById('confirmModalMsg').textContent = message || "Lanjutkan tindakan ini?";
-      
-      const okBtn = document.getElementById('okModalBtn');
-      okBtn.className = `px-5 py-2 rounded-xl text-white font-medium text-sm transition shadow-sm ${btnClass || 'bg-red-600 hover:bg-red-700'}`;
-      okBtn.textContent = btnText || "Lanjutkan";
-
-      currentModalConfirmCallback = onConfirm;
-      document.getElementById('confirmModal').classList.remove('hidden');
-      document.getElementById('confirmModal').classList.add('flex');
-    }
-
-    document.getElementById('cancelModalBtn').addEventListener('click', () => {
-      document.getElementById('confirmModal').classList.add('hidden');
-      document.getElementById('confirmModal').classList.remove('flex');
-      currentModalConfirmCallback = null;
+    document.getElementById("btn-confirm-cancel").addEventListener("click", () => {
+      document.getElementById("confirm-modal").classList.add("hidden");
+      confirmCallback = null;
+    });
+    document.getElementById("btn-confirm-ok").addEventListener("click", () => {
+      document.getElementById("confirm-modal").classList.add("hidden");
+      if (typeof confirmCallback === 'function') {
+        confirmCallback();
+      }
+      confirmCallback = null;
     });
 
-    document.getElementById('okModalBtn').addEventListener('click', () => {
-      if (typeof currentModalConfirmCallback === 'function') {
-        currentModalConfirmCallback();
-      }
-      document.getElementById('confirmModal').classList.add('hidden');
-      document.getElementById('confirmModal').classList.remove('flex');
-      currentModalConfirmCallback = null;
-    });
-
-    // Toast Notification System
-    function showToast(message, type = "info") {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      
-      let icon = '<i class="ph-bold ph-info text-blue-500"></i>';
-      let border = 'border-blue-200 bg-white text-slate-800';
-      if (type === 'success') {
-        icon = '<i class="ph-bold ph-check-circle text-emerald-500"></i>';
-        border = 'border-emerald-200 bg-white text-slate-800';
-      } else if (type === 'error') {
-        icon = '<i class="ph-bold ph-warning-octagon text-rose-500"></i>';
-        border = 'border-rose-200 bg-white text-slate-800';
-      }
-
-      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl text-xs font-medium max-w-sm transition-all duration-300 transform translate-y-2 opacity-0 ${border}`;
-      toast.innerHTML = `
-        <span class="text-base flex-shrink-0">${icon}</span>
-        <span class="flex-1 leading-snug">${message}</span>
-        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x"></i></button>
-      `;
-
-      container.appendChild(toast);
-      // Animate in
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      });
-
-      // Auto remove after 4.5s
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => toast.remove(), 300);
-      }, 4500);
-    }
-
-    // Login Form Submission
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const pass = document.getElementById('loginPassword').value;
-      const ok = window.handleLogin(email, pass);
-      if (!ok) {
-        showToast("Email atau kata sandi tidak cocok. Silakan gunakan tombol Akun Cepat untuk mencoba.", "error");
-      }
-    });
-
-    // Start App on Window Load
-    window.addEventListener('load', () => {
-      startApp();
+    // Inisialisasi awal saat halaman dimuat
+    window.addEventListener("DOMContentLoaded", () => {
+      initDataStore();
+      lucide.createIcons();
     });
   </script>
 </body>
